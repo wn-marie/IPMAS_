@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPMAS - Poverty Models & Estimation</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <script src="scripts/theme-manager.js"></script>
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌍</text></svg>">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">🌍</span>
+                <div>
+                    <h1>IPMAS</h1>
+                    <span class="logo-subtitle">Integrated Poverty Mapping & Analysis System</span>
+                </div>
+            </div>
+            <nav class="nav">
+                <a href="/" class="nav-link">Dashboard</a>
+                <a href="/poverty-models.html" class="nav-link active">Poverty Models</a>
+                <a href="/projects.html" class="nav-link">Local Projects</a>
+            </nav>
+            <div class="header-actions">
+                <div class="user-panel">
+                    <div class="user-avatar" id="userAvatar">Sign up</div>
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="user-dropdown-item" onclick="goToSettings()">⚙️</div>
+                        <div class="user-dropdown-item" onclick="viewHistory()">History</div>
+                        <div class="user-dropdown-item" onclick="submitFeedback()">Feedback</div>
+                        <div class="user-dropdown-item" onclick="logout()">Logout</div>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="goToSettings()">⚙️ Settings</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Models Header -->
+    <div class="models-header">
+        <h1>Poverty Models & Estimation</h1>
+        <p>Advanced AI-powered models for accurate poverty measurement and prediction</p>
+    </div>
+
+    <!-- Main Content -->
+    <main class="models-container">
+        <!-- Model Tabs -->
+        <div class="model-tabs">
+            <button class="model-tab active" onclick="showModel('sae')">Small-Area Estimation</button>
+            <button class="model-tab" onclick="showModel('consumption')">Consumption-Based</button>
+            <button class="model-tab" onclick="showModel('multidimensional')">Multidimensional Poverty</button>
+            <button class="model-tab" onclick="showModel('predictive')">Predictive Models</button>
+            <button class="model-tab" onclick="showModel('comparison')">Model Comparison</button>
+        </div>
+
+        <!-- Small-Area Estimation Model -->
+        <div id="sae" class="model-content active">
+            <div class="model-grid">
+                <div class="model-card">
+                    <h3>📊 Small-Area Estimation (SAE) <span class="model-status status-active">Active</span></h3>
+                    <div class="model-description">
+                        The SAE model uses Bayesian methods to estimate poverty at the sub-county and ward level by combining household survey data with census and administrative data.
+                    </div>
+                    <div class="model-parameters">
+                        <h4>Model Parameters</h4>
+                        <div class="parameter-item">
+                            <span class="parameter-label">Sample Size:</span>
+                            <span class="parameter-value">45,000+ households</span>
+                        </div>
+                        <div class="parameter-item">
+                            <span class="parameter-label">Coverage:</span>
+                            <span class="parameter-value">All 47 counties</span>
+                        </div>
+                        <div class="parameter-item">
+                            <span class="parameter-label">Update Frequency:</span>
+                            <span class="parameter-value">Quarterly</span>
+                        </div>
+                        <div class="parameter-item">
+                            <span class="parameter-label">Confidence Interval:</span>
+                            <span class="parameter-value">95%</span>
+                        </div>
+                    </div>
+                    <div class="model-actions">
+                        <button class="btn btn-primary" onclick="runSAEModel()">Run SAE Analysis</button>
+                        <button class="btn btn-secondary" onclick="viewSAEDetails()">View Details</button>
+                    </div>
+                </div>
+
+                <div class="model-card">
+                    <h3>📈 SAE Results & Accuracy</h3>
+                    <div class="accuracy-indicators">
+                        <div class="accuracy-indicator">
+                            <div class="accuracy-value">94.2%</div>
+                            <div class="accuracy-label">Overall Accuracy</div>
+                        </div>
+                        <div class="accuracy-indicator">
+                            <div class="accuracy-value">89.7%</div>
+                            <div class="accuracy-label">R² Score</div>
+                        </div>
+                        <div class="accuracy-indicator">
+                            <div class="accuracy-value">3.2%</div>
+                            <div class="accuracy-label">RMSE</div>
+                        </div>
+                        <div class="accuracy-indicator">
+                            <div class="accuracy-value">2.1</div>
+                            <div class="accuracy-label">MAPE</div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <h4>SAE Model Performance</h4>
+                        <canvas id="saeAccuracyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-section">
+                <h4>🔧 Configure SAE Model</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <div class="form-group">
+                        <label class="form-label" for="saeLocation">Target Location</label>
+                        <select class="form-select" id="saeLocation">
+                            <option value="all">All Counties</option>
+                            <option value="baringo">Baringo</option>
+                            <option value="bomet">Bomet</option>
+                            <option value="bungoma">Bungoma</option>
+                            <option value="busia">Busia</option>
+                            <option value="elgeyo-marakwet">Elgeyo Marakwet</option>
+                            <option value="embu">Embu</option>
+                            <option value="garissa">Garissa</option>
+                            <option value="homa-bay">Homa Bay</option>
+                            <option value="isiolo">Isiolo</option>
+                            <option value="kajiado">Kajiado</option>
+                            <option value="kakamega">Kakamega</option>
+                            <option value="kericho">Kericho</option>
+                            <option value="kiambu">Kiambu</option>
+                            <option value="kilifi">Kilifi</option>
+                            <option value="kirinyaga">Kirinyaga</option>
+                            <option value="kisii">Kisii</option>
+                            <option value="kisumu">Kisumu</option>
+                            <option value="kitui">Kitui</option>
+                            <option value="kwale">Kwale</option>
+                            <option value="laikipia">Laikipia</option>
+                            <option value="lamu">Lamu</option>
+                            <option value="machakos">Machakos</option>
+                            <option value="makueni">Makueni</option>
+                            <option value="mandera">Mandera</option>
+                            <option value="marsabit">Marsabit</option>
+                            <option value="meru">Meru</option>
+                            <option value="migori">Migori</option>
+                            <option value="mombasa">Mombasa</option>
+                            <option value="muranga">Murang'a</option>
+                            <option value="nairobi">Nairobi</option>
+                            <option value="nakuru">Nakuru</option>
+                            <option value="nandi">Nandi</option>
+                            <option value="narok">Narok</option>
+                            <option value="nyamira">Nyamira</option>
+                            <option value="nyandarua">Nyandarua</option>
+                            <option value="nyeri">Nyeri</option>
+                            <option value="samburu">Samburu</option>
+                            <option value="siaya">Siaya</option>
+                            <option value="taita-taveta">Taita Taveta</option>
+                            <option value="tana-river">Tana River</option>
+                            <option value="tharaka-nithi">Tharaka Nithi</option>
+                            <option value="trans-nzoia">Trans Nzoia</option>
+                            <option value="turkana">Turkana</option>
+                            <option value="uasin-gishu">Uasin Gishu</option>
+                            <option value="vihiga">Vihiga</option>
+                            <option value="wajir">Wajir</option>
+                            <option value="west-pokot">West Pokot</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="saeTimeframe">Time Period</label>
+                        <select class="form-select" id="saeTimeframe">
+                            <option value="2025">2025 (Latest)</option>
+                            <option value="2024">2024</option>
+                            <option value="2023">2023</option>
+                            <option value="2022">2022</option>
+                            <option value="2021">2021</option>
+                            <option value="2020">2020</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="saeConfidence">Confidence Level</label>
+                        <select class="form-select" id="saeConfidence">
+                            <option value="95">95%</option>
+                            <option value="90">90%</option>
+                            <option value="99">99%</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="runSAEModel()">Run SAE Analysis</button>
+            </div>
+        </div>
+
+        <!-- Consumption-Based Model -->
+        <div id="consumption" class="model-content">
+            <div class="model-grid">
+                <div class="model-card">
+                    <h3>💰 Consumption-Based Estimation <span class="model-status status-active">Active</span></h3>
+                    <div class="model-description">
+                        This model estimates poverty based on household consumption patterns, food security indicators, and expenditure data from multiple surveys.
+                    </div>
+                    <div class="model-parameters">
+                        <h4>Model Parameters</h4>
+                        <div class="parameter-item">
+                            <span class="parameter-label">Data Sources:</span>
+                            <span class="parameter-value">KES, DHS, LSMS</span>
+                        </div>
+                        <div class="parameter-item">
+                            <span class="parameter-label">Consumption Items:</span>
+                            <span class="parameter-value">127 categories</span>
+                        </div>
+                        <div class="parameter-item">
+                            <span class="parameter-label">Poverty Line:</span>
+                            <span class="parameter-value">₵1,562/month</span>
+                        </div>
+                        <div class="parameter-item">
+                            <span class="parameter-label">Update Frequency:</span>
+                            <span class="parameter-value">Bi-annually</span>
+                        </div>
+                    </div>
+                    <div class="model-actions">
+                        <button class="btn btn-primary" onclick="runConsumptionModel()">Run Consumption Analysis</button>
+                        <button class="btn btn-secondary" onclick="viewConsumptionDetails()">View Details</button>
+                    </div>
+                </div>
+
+                <div class="model-card">
+                    <h3>📊 Consumption Model Results</h3>
+                    <div class="accuracy-indicators">
+                        <div class="accuracy-indicator">
+                            <div class="accuracy-value">91.8%</div>
+                            <div class="accuracy-label">Overall Accuracy</div>
+                        </div>
+                        <div class="accuracy-indicator">
+                            <div class="accuracy-value">87.3%</div>
+                            <div class="accuracy-label">R² Score</div>
+                        </div>
+                        <div class="accuracy-indicator">
+                            <div class="accuracy-value">4.1%</div>
+                            <div class="accuracy-label">RMSE</div>
+                        </div>
+                        <div class="accuracy-indicator">
+                            <div class="accuracy-value">3.8</div>
+                            <div class="accuracy-label">MAPE</div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <h4>Consumption vs Poverty Correlation</h4>
+                        <canvas id="consumptionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Multidimensional Poverty Model -->
+        <div id="multidimensional" class="model-content">
+            <div class="model-grid">
+                <div class="model-card">
+                    <h3>🎯 Multidimensional Poverty Index <span class="model-status status-active">Active</span></h3>
+                    <div class="model-description">
+                        The MPI model measures poverty across multiple dimensions including health, education, and living standards, providing a comprehensive poverty assessment.
+                    </div>
+                    <div class="model-parameters">
+                        <h4>Model Dimensions</h4>
+                        <div class="parameter-item">
+                            <span class="parameter-label">Health:</span>
+                            <span class="parameter-value">Nutrition, Child Mortality</span>
+                        </div>
+                        <div class="parameter-item">
+                            <span class="parameter-label">Education:</span>
+                            <span class="parameter-value">Years of Schooling</span>
+                        </div>
+                        <div class="parameter-item">
+                            <span class="parameter-label">Living Standards:</span>
+                            <span class="parameter-value">Water, Sanitation, Electricity</span>
+                        </div>
+                        <div class="parameter-item">
+                            <span class="parameter-label">Dimensions:</span>
+                            <span class="parameter-value">10 indicators</span>
+                        </div>
+                    </div>
+                    <div class="model-actions">
+                        <button class="btn btn-primary" onclick="runMPIModel()">Run MPI Analysis</button>
+                        <button class="btn btn-secondary" onclick="viewMPIDetails()">View Details</button>
+                    </div>
+                </div>
+
+                <div class="model-card">
+                    <h3>📈 MPI Results & Breakdown</h3>
+                    <div class="accuracy-indicators">
+                        <div class="accuracy-indicator">
+                            <div class="accuracy-value">0.284</div>
+                            <div class="accuracy-label">National MPI</div>
+                        </div>
+                        <div class="accuracy-indicator">
+                            <div class="accuracy-value">36.1%</div>
+                            <div class="accuracy-label">Headcount Ratio</div>
+                        </div>
+                        <div class="accuracy-indicator">
+                            <div class="accuracy-value">78.7%</div>
+                            <div class="accuracy-label">Intensity</div>
+                        </div>
+                        <div class="accuracy-indicator">
+                            <div class="accuracy-value">15.2M</div>
+                            <div class="accuracy-label">Poor People</div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <h4>MPI Dimension Contributions</h4>
+                        <canvas id="mpiChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Predictive Models -->
+        <div id="predictive" class="model-content">
+            <div class="model-grid">
+                <div class="model-card">
+                    <h3>🔮 Predictive Poverty Models <span class="model-status status-development">Development</span></h3>
+                    <div class="model-description">
+                        AI-powered models that predict future poverty trends using machine learning algorithms and real-time data streams.
+                    </div>
+                    <div class="model-parameters">
+                        <h4>Model Features</h4>
+                        <div class="parameter-item">
+                            <span class="parameter-label">Algorithm:</span>
+                            <span class="parameter-value">Random Forest, XGBoost</span>
+                        </div>
+                        <div class="parameter-item">
+                            <span class="parameter-label">Features:</span>
+                            <span class="parameter-value">50+ variables</span>
+                        </div>
+                        <div class="parameter-item">
+                            <span class="parameter-label">Prediction Horizon:</span>
+                            <span class="parameter-value">6-24 months</span>
+                        </div>
+                        <div class="parameter-item">
+                            <span class="parameter-label">Update Frequency:</span>
+                            <span class="parameter-value">Monthly</span>
+                        </div>
+                    </div>
+                    <div class="model-actions">
+                        <button class="btn btn-primary" onclick="runPredictiveModel()">Run Predictions</button>
+                        <button class="btn btn-secondary" onclick="viewPredictiveDetails()">View Details</button>
+                    </div>
+                </div>
+
+                <div class="model-card">
+                    <h3>📊 Prediction Accuracy</h3>
+                    <div class="accuracy-indicators">
+                        <div class="accuracy-indicator">
+                            <div class="accuracy-value">88.5%</div>
+                            <div class="accuracy-label">6-Month Accuracy</div>
+                        </div>
+                        <div class="accuracy-indicator">
+                            <div class="accuracy-value">82.1%</div>
+                            <div class="accuracy-label">12-Month Accuracy</div>
+                        </div>
+                        <div class="accuracy-indicator">
+                            <div class="accuracy-value">76.3%</div>
+                            <div class="accuracy-label">24-Month Accuracy</div>
+                        </div>
+                        <div class="accuracy-indicator">
+                            <div class="accuracy-value">0.91</div>
+                            <div class="accuracy-label">F1 Score</div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <h4>Prediction vs Actual</h4>
+                        <canvas id="predictionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Model Comparison -->
+        <div id="comparison" class="model-content">
+            <div class="chart-container">
+                <h4>Model Performance Comparison</h4>
+                <canvas id="comparisonChart"></canvas>
+            </div>
+
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Model</th>
+                        <th>Accuracy</th>
+                        <th>R² Score</th>
+                        <th>RMSE</th>
+                        <th>MAPE</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Small-Area Estimation</td>
+                        <td>94.2%</td>
+                        <td>89.7%</td>
+                        <td>3.2%</td>
+                        <td>2.1</td>
+                        <td><span class="model-status status-active">Active</span></td>
+                        <td>
+                            <button class="btn btn-primary" onclick="runSAEModel()">Run</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Consumption-Based</td>
+                        <td>91.8%</td>
+                        <td>87.3%</td>
+                        <td>4.1%</td>
+                        <td>3.8</td>
+                        <td><span class="model-status status-active">Active</span></td>
+                        <td>
+                            <button class="btn btn-primary" onclick="runConsumptionModel()">Run</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Multidimensional Poverty</td>
+                        <td>89.5%</td>
+                        <td>85.2%</td>
+                        <td>4.8%</td>
+                        <td>4.2</td>
+                        <td><span class="model-status status-active">Active</span></td>
+                        <td>
+                            <button class="btn btn-primary" onclick="runMPIModel()">Run</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Predictive Models</td>
+                        <td>88.5%</td>
+                        <td>82.1%</td>
+                        <td>5.2%</td>
+                        <td>4.8</td>
+                        <td><span class="model-status status-development">Development</span></td>
+                        <td>
+                            <button class="btn btn-primary" onclick="runPredictiveModel()">Run</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-info">
+                <span class="footer-tagline">Empowering communities through data-driven insights ✨</span>
+                <p class="footer-copyright">© 2025 | Designed by Mary Wairimu</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="scripts/config.js"></script>
+    <script src="scripts/subscription.js"></script>
+    <script src="scripts/poverty-models.js"></script>
+    <script src="scripts/main.js"></script>
+</body>
+</html>

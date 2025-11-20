@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upgrade to Premium | IPMAS</title>
+    <script src="/scripts/theme-manager.js"></script>
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="icon" href="/icons/favicon.ico" type="image/x-icon">
+</head>
+<body class="upgrade-page">
+    <main class="upgrade-single">
+        <section class="upgrade-single-card">
+            <header>
+                <a href="/index.html" class="upgrade-back-link">← Back to Dashboard</a>
+                <h1>Upgrade to IPMAS Premium</h1>
+                <p>Unlock unlimited searches, AI insights, and priority support for your organization.</p>
+            </header>
+            <section class="upgrade-benefits">
+                <h2>Why Teams Choose Premium</h2>
+                <ul class="benefits-list">
+                    <li>
+                        <span class="benefit-icon">📊</span>
+                        <div>
+                            <h3>Advanced Analytics</h3>
+                            <p>Run ML-driven forecasts, hotspot detection, and intervention simulations tailored to your data.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="benefit-icon">🤝</span>
+                        <div>
+                            <h3>Collaboration Tools</h3>
+                            <p>Invite teammates, assign responsibilities, and coordinate responses in real time.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="benefit-icon">📥</span>
+                        <div>
+                            <h3>Unlimited Data Access</h3>
+                            <p>Export full-resolution datasets, reports, and map layers without daily limits.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="benefit-icon">⚡</span>
+                        <div>
+                            <h3>Priority Support</h3>
+                            <p>Dedicated onboarding, quarterly training, and 1-hour response time from the IPMAS team.</p>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+            
+            <!-- Authentication Choice Section (shown if not logged in) -->
+            <div id="authChoiceSection" class="auth-choice-section" style="display: none;">
+                <h2>Get Started</h2>
+                <p>Already have an account? Sign in to continue. New to IPMAS? Sign up to get started.</p>
+                <div class="auth-choice-buttons">
+                    <button type="button" class="btn btn-primary" onclick="showSignInOption()">
+                        Sign In
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="showSignUpOption()">
+                        Sign Up
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Upgrade Form (shown after authentication choice or if already logged in) -->
+            <form id="upgradeRequestForm" class="upgrade-form" style="display: none;">
+                <div class="form-group">
+                    <label for="organizationName">Organization Name</label>
+                    <input id="organizationName" type="text" required>
+                </div>
+                <div class="form-group">
+                    <label for="contactPerson">Contact Person</label>
+                    <input id="contactPerson" type="text" required>
+                </div>
+                <div class="form-group">
+                    <label for="contactEmail">Contact Email</label>
+                    <input id="contactEmail" type="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="contactPhone">Contact Phone</label>
+                    <input id="contactPhone" type="tel" required>
+                </div>
+                <div class="form-group">
+                    <label for="subscriptionAmount">Subscription Amount (KES) *</label>
+                    <input id="subscriptionAmount" type="number" min="5000" step="1000" value="5000" required>
+                    <small class="form-hint">Minimum: 5,000 KES (30 days). Amount paid determines subscription duration (5,000 KES = 30 days, 10,000 KES = 60 days, etc.)</small>
+                </div>
+                <div class="form-group">
+                    <span class="form-label">Preferred Payment Method</span>
+                    <div class="payment-options">
+                        <label class="payment-option">
+                            <input type="radio" name="paymentMethod" value="M-Pesa" required>
+                            <span class="payment-icon">📱</span>
+                            <span class="payment-label">M-Pesa</span>
+                        </label>
+                        <label class="payment-option">
+                            <input type="radio" name="paymentMethod" value="Card" required>
+                            <span class="payment-icon">💳</span>
+                            <span class="payment-label">Credit / Debit Card</span>
+                        </label>
+                        <label class="payment-option">
+                            <input type="radio" name="paymentMethod" value="PayPal" required>
+                            <span class="payment-icon">🅿️</span>
+                            <span class="payment-label">PayPal</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="upgradeNotes">Notes (optional)</label>
+                    <textarea id="upgradeNotes" rows="4"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit Upgrade Request</button>
+            </form>
+            <footer>
+                <p class="upgrade-contact">
+                    Prefer a direct chat? Email <a href="mailto:mw270761@gmail.com">mw270761@gmail.com</a> or call <a href="tel:+254718731762">+254 718 731 762</a>.
+                </p>
+                <p class="footer-copyright">© 2025 | Designed by Mary Wairimu</p>
+            </footer>
+        </section>
+    </main>
+
+    <script src="/scripts/config.js"></script>
+    <script src="/scripts/subscription.js"></script>
+    <script src="/scripts/upgrade.js"></script>
+    <script>
+        // Functions to handle authentication choice
+        function showSignInOption() {
+            // Show the subscription modal with sign in form
+            if (window.subscriptionManager) {
+                window.subscriptionManager.showModal();
+                // Show login form
+                window.subscriptionManager.showLoginForm();
+            }
+        }
+
+        function showSignUpOption() {
+            // Show the subscription modal with sign up form
+            if (window.subscriptionManager) {
+                window.subscriptionManager.showModal();
+                // Show register form
+                window.subscriptionManager.showRegisterForm();
+            }
+        }
+
+
+        // Initialize page based on authentication status
+        function initializeUpgradePage() {
+            const subscriptionManager = window.subscriptionManager;
+            const authChoiceSection = document.getElementById('authChoiceSection');
+            const upgradeForm = document.getElementById('upgradeRequestForm');
+            
+            if (!authChoiceSection || !upgradeForm) {
+                // Elements not ready yet, try again
+                setTimeout(initializeUpgradePage, 100);
+                return;
+            }
+            
+            if (subscriptionManager && subscriptionManager.currentUser) {
+                // User is already logged in - show form directly
+                authChoiceSection.style.display = 'none';
+                upgradeForm.style.display = 'block';
+                
+                // Pre-fill form with logged-in user data
+                const user = subscriptionManager.currentUser;
+                const emailInput = document.getElementById('contactEmail');
+                const personInput = document.getElementById('contactPerson');
+                const orgInput = document.getElementById('organizationName');
+                
+                if (emailInput && !emailInput.value) {
+                    emailInput.value = user.email || '';
+                }
+                if (personInput && !personInput.value && user.username) {
+                    personInput.value = user.username;
+                }
+                if (orgInput && !orgInput.value && user.organizationName) {
+                    orgInput.value = user.organizationName;
+                }
+            } else {
+                // User is not logged in - show auth choice section
+                authChoiceSection.style.display = 'block';
+                upgradeForm.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Wait for subscription manager to initialize and check session
+            // Check multiple times to ensure session check completes
+            let attempts = 0;
+            const maxAttempts = 10;
+            
+            const checkReady = setInterval(() => {
+                attempts++;
+                if (window.subscriptionManager || attempts >= maxAttempts) {
+                    clearInterval(checkReady);
+                    // Give a bit more time for session check to complete
+                    setTimeout(initializeUpgradePage, 300);
+                }
+            }, 100);
+            
+            // Listen for successful login to show form
+            document.addEventListener('loginSuccess', () => {
+                setTimeout(() => {
+                    // Hide auth choice section and show the form
+                    const authChoiceSection = document.getElementById('authChoiceSection');
+                    const upgradeForm = document.getElementById('upgradeRequestForm');
+                    
+                    if (authChoiceSection) {
+                        authChoiceSection.style.display = 'none';
+                    }
+                    if (upgradeForm) {
+                        upgradeForm.style.display = 'block';
+                    }
+                    
+                    // Pre-fill form with logged-in user data
+                    const subscriptionManager = window.subscriptionManager;
+                    if (subscriptionManager && subscriptionManager.currentUser) {
+                        const user = subscriptionManager.currentUser;
+                        const emailInput = document.getElementById('contactEmail');
+                        const personInput = document.getElementById('contactPerson');
+                        const orgInput = document.getElementById('organizationName');
+                        
+                        if (emailInput) {
+                            emailInput.value = user.email || '';
+                        }
+                        if (personInput && user.username) {
+                            personInput.value = user.username;
+                        }
+                        if (orgInput && user.organizationName) {
+                            orgInput.value = user.organizationName;
+                        }
+                    }
+                }, 100);
+            });
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,145 @@
+const express = require('express');
+const router = express.Router();
+const dbService = require('../config/postgis');
+
+// Submit community feedback
+router.post('/submit', async (req, res) => {
+    try {
+        const { location, comment, sentiment, urgency_level, demographic_info, contact_info } = req.body;
+        
+        // Validate required fields
+        if (!location || !comment || !sentiment) {
+            return res.status(400).json({
+                error: 'Missing required fields',
+                message: 'Location, comment, and sentiment are required'
+            });
+        }
+
+        // Validate sentiment
+        const validSentiments = ['Positive', 'Negative', 'Neutral'];
+        if (!validSentiments.includes(sentiment)) {
+            return res.status(400).json({
+                error: 'Invalid sentiment',
+                message: `Sentiment must be one of: ${validSentiments.join(', ')}`
+            });
+        }
+
+        // Validate urgency level
+        const validUrgencyLevels = ['Low', 'Medium', 'High', 'Critical'];
+        if (urgency_level && !validUrgencyLevels.includes(urgency_level)) {
+            return res.status(400).json({
+                error: 'Invalid urgency level',
+                message: `Urgency level must be one of: ${validUrgencyLevels.join(', ')}`
+            });
+        }
+
+        const feedbackData = {
+            coordinates: { lat: location.lat, lng: location.lng },
+            feedback_type: 'general',
+            content: comment,
+            urgency_level: urgency_level || 'Medium',
+            demographic_info: demographic_info || {},
+            contact_info: contact_info || {}
+        };
+
+        const savedFeedback = await dbService.saveCommunityFeedback(feedbackData);
+        
+        res.status(201).json({
+            success: true,
+            message: 'Feedback submitted successfully',
+            feedback: {
+                id: savedFeedback.id,
+                location: location,
+                sentiment: sentiment,
+                urgency_level: urgency_level,
+                submitted_at: savedFeedback.created_at
+            }
+        });
+    } catch (error) {
+        console.error('Feedback submission error:', error);
+        res.status(500).json({
+            error: 'Submission failed',
+            message: 'Unable to submit feedback'
+        });
+    }
+});
+
+// Get feedback for a specific location
+router.get('/location', async (req, res) => {
+    try {
+        const { lat, lng, radius = 5, limit = 20 } = req.query;
+        
+        if (!lat || !lng) {
+            return res.status(400).json({
+                error: 'Missing coordinates',
+                message: 'Latitude and longitude are required'
+            });
+        }
+
+        const latitude = parseFloat(lat);
+        const longitude = parseFloat(lng);
+        const radiusKm = parseFloat(radius);
+        const limitCount = parseInt(limit);
+        
+        if (isNaN(latitude) || isNaN(longitude)) {
+            return res.status(400).json({
+                error: 'Invalid coordinates',
+                message: 'Coordinates must be valid numbers'
+            });
+        }
+
+        const filters = {
+            radius: radiusKm,
+            limit: limitCount
+        };
+
+        const feedback = await dbService.getLocationFeedback(latitude, longitude, filters);
+        
+        res.json({
+            success: true,
+            location: { lat: latitude, lng: longitude },
+            radius: radiusKm,
+            count: feedback.length,
+            feedback: feedback
+        });
+    } catch (error) {
+        console.error('Location feedback error:', error);
+        res.status(500).json({
+            error: 'Retrieval failed',
+            message: 'Unable to retrieve location feedback'
+        });
+    }
+});
+
+// Get urgent alerts
+router.get('/urgent', async (req, res) => {
+    try {
+        const { limit = 10 } = req.query;
+        
+        if (dbService.mockData) {
+            const urgentFeedback = dbService.mockData.feedback.filter(fb => 
+                fb.urgency_level === 'High' || fb.urgency_level === 'Critical'
+            ).slice(0, parseInt(limit));
+
+            res.json({
+                success: true,
+                count: urgentFeedback.length,
+                urgent_alerts: urgentFeedback
+            });
+        } else {
+            // Production implementation would query the database
+            res.status(501).json({
+                error: 'Not implemented',
+                message: 'Urgent alerts not implemented for production database'
+            });
+        }
+    } catch (error) {
+        console.error('Urgent alerts error:', error);
+        res.status(500).json({
+            error: 'Retrieval failed',
+            message: 'Unable to retrieve urgent alerts'
+        });
+    }
+});
+
+module.exports = router;

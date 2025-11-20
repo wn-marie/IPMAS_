@@ -1,0 +1,34 @@
+# # IPMAS Backend Environment Configuration
+
+# # Server Configuration
+# PORT=3001
+# NODE_ENV=development
+
+# # Database Configuration
+# DB_HOST=localhost
+# DB_PORT=5432
+# DB_NAME=ipmas_db
+# DB_USER=ipmas_user
+# DB_PASSWORD=postgres
+
+# # Redis Configuration
+# REDIS_HOST=localhost
+# REDIS_PORT=6379
+# REDIS_PASSWORD=
+
+# # Security Configuration
+# JWT_SECRET=your_jwt_secret_here
+# CORS_ORIGIN=http://localhost:3000
+
+# # API Configuration
+# API_VERSION=v1
+# RATE_LIMIT_WINDOW_MS=900000
+# RATE_LIMIT_MAX_REQUESTS=100
+
+# # Logging
+# LOG_LEVEL=info
+# LOG_FILE=logs/app.log
+
+# # External Services
+# MAPBOX_API_KEY=your_mapbox_key_here
+# OPENSTREETMAP_API_URL=https://api.openstreetmap.org

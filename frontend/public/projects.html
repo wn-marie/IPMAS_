@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPMAS - Local Projects & Impact</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <script src="scripts/theme-manager.js"></script>
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌍</text></svg>">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">🌍</span>
+                <div>
+                    <h1>IPMAS</h1>
+                    <span class="logo-subtitle">Integrated Poverty Mapping & Analysis System</span>
+                </div>
+            </div>
+            <nav class="nav">
+                <a href="/" class="nav-link">Dashboard</a>
+                <a href="/poverty-models.html" class="nav-link">Poverty Models</a>
+                <a href="/projects.html" class="nav-link active">Local Projects</a>
+            </nav>
+            <div class="header-actions">
+                <div class="user-panel">
+                    <div class="user-avatar" id="userAvatar">Sign up</div>
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="user-dropdown-item" onclick="goToSettings()">⚙️</div>
+                        <div class="user-dropdown-item" onclick="viewHistory()">History</div>
+                        <div class="user-dropdown-item" onclick="submitFeedback()">Feedback</div>
+                        <div class="user-dropdown-item" onclick="logout()">Logout</div>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="goToSettings()">⚙️ Settings</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Projects Header -->
+    <div class="projects-header">
+        <h1>Local Projects & Impact</h1>
+        <p>Community-driven initiatives making a difference across Kenya</p>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Project Statistics -->
+        <section class="projects-stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalOngoing">12</div>
+                <div class="stat-label">Ongoing Projects</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalPlanned">8</div>
+                <div class="stat-label">Planned Projects</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalCompleted">25</div>
+                <div class="stat-label">Completed Projects</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalImpact">15,420</div>
+                <div class="stat-label">Lives Impacted</div>
+            </div>
+        </section>
+
+        <!-- Impact Indicators -->
+        <section class="impact-indicators">
+            <div class="impact-indicator">
+                <div class="impact-icon">🏠</div>
+                <div class="impact-value">2,340</div>
+                <div class="impact-label">Houses Improved</div>
+            </div>
+            <div class="impact-indicator">
+                <div class="impact-icon">💧</div>
+                <div class="impact-value">89</div>
+                <div class="impact-label">Water Points</div>
+            </div>
+            <div class="impact-indicator">
+                <div class="impact-icon">🎓</div>
+                <div class="impact-value">1,567</div>
+                <div class="impact-label">Students Supported</div>
+            </div>
+            <div class="impact-indicator">
+                <div class="impact-icon">💼</div>
+                <div class="impact-value">890</div>
+                <div class="impact-label">Jobs Created</div>
+            </div>
+        </section>
+
+        <!-- Project Tabs -->
+        <div class="projects-tabs">
+            <button class="tab-button active" onclick="showTab('ongoing')">Ongoing Projects</button>
+            <button class="tab-button" onclick="showTab('planned')">Planned Projects</button>
+            <button class="tab-button" onclick="showTab('completed')">Completed Projects</button>
+        </div>
+
+        <!-- Ongoing Projects -->
+        <div id="ongoing" class="tab-content active">
+            <div class="projects-grid">
+                <div class="project-card">
+                    <div class="project-header">
+                        <div class="project-title">Kibera Water Access Initiative</div>
+                        <div class="project-location">📍 Kibera, Nairobi County</div>
+                    </div>
+                    <div class="project-body">
+                        <div class="project-status status-ongoing">🔄 Ongoing</div>
+                        <div class="project-description">
+                            Installing 15 new water points and improving existing infrastructure to provide clean water access to 5,000+ residents in Kibera informal settlement.
+                        </div>
+                        <div class="project-metrics">
+                            <div class="metric">
+                                <div class="metric-value">75%</div>
+                                <div class="metric-label">Progress</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">12/15</div>
+                                <div class="metric-label">Water Points</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">4,200</div>
+                                <div class="metric-label">People Served</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">₵2.1M</div>
+                                <div class="metric-label">Budget Used</div>
+                            </div>
+                        </div>
+                        <div class="project-actions">
+                            <button class="btn btn-primary" onclick="viewProjectDetails('kibera-water')">View Details</button>
+                            <button class="btn btn-secondary" onclick="provideFeedback('kibera-water')">Give Feedback</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="project-card">
+                    <div class="project-header">
+                        <div class="project-title">Mathare Education Enhancement</div>
+                        <div class="project-location">📍 Mathare, Nairobi County</div>
+                    </div>
+                    <div class="project-body">
+                        <div class="project-status status-ongoing">🔄 Ongoing</div>
+                        <div class="project-description">
+                            Building 3 new classrooms and providing educational materials to improve learning outcomes for 500+ children in Mathare slum.
+                        </div>
+                        <div class="project-metrics">
+                            <div class="metric">
+                                <div class="metric-value">60%</div>
+                                <div class="metric-label">Progress</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">2/3</div>
+                                <div class="metric-label">Classrooms</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">320</div>
+                                <div class="metric-label">Students</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">₵1.8M</div>
+                                <div class="metric-label">Budget Used</div>
+                            </div>
+                        </div>
+                        <div class="project-actions">
+                            <button class="btn btn-primary" onclick="viewProjectDetails('mathare-education')">View Details</button>
+                            <button class="btn btn-secondary" onclick="provideFeedback('mathare-education')">Give Feedback</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="project-card">
+                    <div class="project-header">
+                        <div class="project-title">Mombasa Health Clinic</div>
+                        <div class="project-location">📍 Likoni, Mombasa County</div>
+                    </div>
+                    <div class="project-body">
+                        <div class="project-status status-ongoing">🔄 Ongoing</div>
+                        <div class="project-description">
+                            Establishing a community health clinic with basic medical equipment and trained staff to serve 3,000+ residents in Likoni area.
+                        </div>
+                        <div class="project-metrics">
+                            <div class="metric">
+                                <div class="metric-value">45%</div>
+                                <div class="metric-label">Progress</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">1</div>
+                                <div class="metric-label">Clinic</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">1,350</div>
+                                <div class="metric-label">Patients</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">₵3.2M</div>
+                                <div class="metric-label">Budget Used</div>
+                            </div>
+                        </div>
+                        <div class="project-actions">
+                            <button class="btn btn-primary" onclick="viewProjectDetails('mombasa-health')">View Details</button>
+                            <button class="btn btn-secondary" onclick="provideFeedback('mombasa-health')">Give Feedback</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="project-card">
+                    <div class="project-header">
+                        <div class="project-title">Kisumu Skills Training</div>
+                        <div class="project-location">📍 Kondele, Kisumu County</div>
+                    </div>
+                    <div class="project-body">
+                        <div class="project-status status-ongoing">🔄 Ongoing</div>
+                        <div class="project-description">
+                            Providing vocational training in tailoring, carpentry, and computer skills to 200+ youth for better employment opportunities.
+                        </div>
+                        <div class="project-metrics">
+                            <div class="metric">
+                                <div class="metric-value">80%</div>
+                                <div class="metric-label">Progress</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">165</div>
+                                <div class="metric-label">Trainees</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">89</div>
+                                <div class="metric-label">Graduates</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">₵1.5M</div>
+                                <div class="metric-label">Budget Used</div>
+                            </div>
+                        </div>
+                        <div class="project-actions">
+                            <button class="btn btn-primary" onclick="viewProjectDetails('kisumu-skills')">View Details</button>
+                            <button class="btn btn-secondary" onclick="provideFeedback('kisumu-skills')">Give Feedback</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Planned Projects -->
+        <div id="planned" class="tab-content">
+            <div class="projects-grid">
+                <div class="project-card">
+                    <div class="project-header">
+                        <div class="project-title">Nakuru Solar Power Initiative</div>
+                        <div class="project-location">📍 Nakuru Town, Nakuru County</div>
+                    </div>
+                    <div class="project-body">
+                        <div class="project-status status-planned">📅 Planned</div>
+                        <div class="project-description">
+                            Installing solar panels in 500 households to provide clean, affordable electricity and reduce energy poverty in Nakuru.
+                        </div>
+                        <div class="project-metrics">
+                            <div class="metric">
+                                <div class="metric-value">0%</div>
+                                <div class="metric-label">Progress</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">0/500</div>
+                                <div class="metric-label">Households</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">2,500</div>
+                                <div class="metric-label">Expected Impact</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">₵8.5M</div>
+                                <div class="metric-label">Budget</div>
+                            </div>
+                        </div>
+                        <div class="project-actions">
+                            <button class="btn btn-primary" onclick="viewProjectDetails('nakuru-solar')">View Details</button>
+                            <button class="btn btn-secondary" onclick="supportProject('nakuru-solar')">Support Project</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="project-card">
+                    <div class="project-header">
+                        <div class="project-title">Eldoret Market Development</div>
+                        <div class="project-location">📍 Eldoret, Uasin Gishu County</div>
+                    </div>
+                    <div class="project-body">
+                        <div class="project-status status-planned">📅 Planned</div>
+                        <div class="project-description">
+                            Building a modern market facility with proper sanitation, storage, and security to support 300+ vendors and improve trade.
+                        </div>
+                        <div class="project-metrics">
+                            <div class="metric">
+                                <div class="metric-value">0%</div>
+                                <div class="metric-label">Progress</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">0/300</div>
+                                <div class="metric-label">Vendor Stalls</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">1,500</div>
+                                <div class="metric-label">Expected Impact</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">₵12M</div>
+                                <div class="metric-label">Budget</div>
+                            </div>
+                        </div>
+                        <div class="project-actions">
+                            <button class="btn btn-primary" onclick="viewProjectDetails('eldoret-market')">View Details</button>
+                            <button class="btn btn-secondary" onclick="supportProject('eldoret-market')">Support Project</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Completed Projects -->
+        <div id="completed" class="tab-content">
+            <div class="projects-grid">
+                <div class="project-card">
+                    <div class="project-header">
+                        <div class="project-title">Thika Road Infrastructure</div>
+                        <div class="project-location">📍 Thika, Kiambu County</div>
+                    </div>
+                    <div class="project-body">
+                        <div class="project-status status-completed">✅ Completed</div>
+                        <div class="project-description">
+                            Successfully upgraded 5km of roads with proper drainage and lighting, improving transportation and safety for 10,000+ residents.
+                        </div>
+                        <div class="project-metrics">
+                            <div class="metric">
+                                <div class="metric-value">100%</div>
+                                <div class="metric-label">Progress</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">5km</div>
+                                <div class="metric-label">Roads Built</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">10,000</div>
+                                <div class="metric-label">People Served</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">₵15M</div>
+                                <div class="metric-label">Total Cost</div>
+                            </div>
+                        </div>
+                        <div class="project-actions">
+                            <button class="btn btn-primary" onclick="viewProjectDetails('thika-roads')">View Details</button>
+                            <button class="btn btn-secondary" onclick="viewImpact('thika-roads')">View Impact</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="project-card">
+                    <div class="project-header">
+                        <div class="project-title">Meru Water Treatment Plant</div>
+                        <div class="project-location">📍 Meru, Meru County</div>
+                    </div>
+                    <div class="project-body">
+                        <div class="project-status status-completed">✅ Completed</div>
+                        <div class="project-description">
+                            Built a water treatment facility providing clean water to 8,000+ residents and reducing waterborne diseases by 60%.
+                        </div>
+                        <div class="project-metrics">
+                            <div class="metric">
+                                <div class="metric-value">100%</div>
+                                <div class="metric-label">Progress</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">1</div>
+                                <div class="metric-label">Treatment Plant</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">8,000</div>
+                                <div class="metric-label">People Served</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">₵18M</div>
+                                <div class="metric-label">Total Cost</div>
+                            </div>
+                        </div>
+                        <div class="project-actions">
+                            <button class="btn btn-primary" onclick="viewProjectDetails('meru-water')">View Details</button>
+                            <button class="btn btn-secondary" onclick="viewImpact('meru-water')">View Impact</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Community Feedback Section -->
+        <section class="feedback-section">
+            <h3>Share Your Project Feedback</h3>
+            <p>Help us improve by sharing your experience with local projects in your area.</p>
+            
+            <form class="feedback-form" onsubmit="submitFeedback(event)">
+                <div class="form-group">
+                    <label class="form-label" for="projectSelect">Select Project</label>
+                    <select class="form-select" id="projectSelect" required>
+                        <option value="">Choose a project...</option>
+                        <option value="kibera-water">Kibera Water Access Initiative</option>
+                        <option value="mathare-education">Mathare Education Enhancement</option>
+                        <option value="mombasa-health">Mombasa Health Clinic</option>
+                        <option value="kisumu-skills">Kisumu Skills Training</option>
+                        <option value="nakuru-solar">Nakuru Solar Power Initiative</option>
+                        <option value="eldoret-market">Eldoret Market Development</option>
+                        <option value="thika-roads">Thika Road Infrastructure</option>
+                        <option value="meru-water">Meru Water Treatment Plant</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="feedbackType">Feedback Type</label>
+                    <select class="form-select" id="feedbackType" required>
+                        <option value="">Select type...</option>
+                        <option value="positive">Positive Impact</option>
+                        <option value="concern">Concern/Issue</option>
+                        <option value="suggestion">Suggestion</option>
+                        <option value="general">General Feedback</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="feedbackMessage">Your Feedback</label>
+                    <textarea class="form-textarea" id="feedbackMessage" placeholder="Share your experience, suggestions, or concerns about this project..." required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="contactInfo">Contact Information (Optional)</label>
+                    <input type="text" class="form-input" id="contactInfo" placeholder="Email or phone for follow-up">
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Submit Feedback</button>
+            </form>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-info">
+                <span class="footer-tagline">Empowering communities through data-driven insights ✨</span>
+                <p class="footer-copyright">© 2025 | Designed by Mary Wairimu</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="scripts/config.js"></script>
+    <script src="scripts/subscription.js"></script>
+    <script src="scripts/projects.js"></script>
+    <script src="scripts/main.js"></script>
+</body>
+</html>

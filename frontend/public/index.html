@@ -1,0 +1,3419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPMAS - Integrated Poverty Mapping & Analysis System</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="styles/main.css?v=20250120">
+    <script src="scripts/theme-manager.js"></script>
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌍</text></svg>">
+</head>
+<body>
+    <!-- Trial Banner -->
+    <div class="trial-banner" id="trialBanner">
+        <a href="#" id="trialBannerLink">Upgrade to Premium</a>
+        <span class="close" onclick="this.parentElement.style.display='none'">&times;</span>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="logo">
+                    <span class="logo-icon globe-icon">🌍</span>
+                    <div>
+                        <h1>IPMAS</h1>
+                        <span class="logo-subtitle">Integrated Poverty Mapping & Analysis System</span>
+                    </div>
+                </div>
+                <nav class="nav">
+                <div class="nav-dropdown-container">
+                    <button class="nav-menu-btn" onclick="toggleNavDropdown()">
+                        <span class="nav-menu-icon">☰</span>
+                        <span class="nav-menu-text">Menu</span>
+                    </button>
+                    <div class="nav-dropdown" id="navDropdown">
+                        <a href="/" class="nav-dropdown-item" onclick="closeNavDropdown()">
+                            <span class="nav-item-icon"></span>
+                            <span>Dashboard</span>
+                        </a>
+                        <a href="/poverty-models.html" class="nav-dropdown-item" onclick="closeNavDropdown()">
+                            <span class="nav-item-icon"></span>
+                            <span>Poverty Models</span>
+                        </a>
+                        <a href="/projects.html" class="nav-dropdown-item" onclick="closeNavDropdown()">
+                            <span class="nav-item-icon"></span>
+                            <span>Development Projects</span>
+                        </a>
+                        <a href="/feedback.html" class="nav-dropdown-item" onclick="closeNavDropdown()">
+                            <span class="nav-item-icon">💬</span>
+                            <span>Feedback & Support</span>
+                        </a>
+                        
+                        <!-- Map Controls in Dropdown -->
+                        <div class="nav-dropdown-divider"></div>
+                        <div class="nav-dropdown-item map-controls-section" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+                            <strong style="font-size: 0.85rem; color: var(--primary-color);">Interactive Poverty Map</strong>
+                            <div style="display: flex; gap: 8px; width: 100%;">
+                                <button class="btn btn-sm btn-secondary" onclick="resetMapView(); closeNavDropdown();" style="flex: 1; padding: 8px;">
+                                    Reset View
+                                </button>
+                                <button class="btn btn-sm btn-secondary" onclick="toggleMapLayers(); closeNavDropdown();" style="flex: 1; padding: 8px;">
+                                    Toggle Layers
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </nav>
+            </div>
+            <div class="header-actions">
+                <div class="user-panel">
+                    <div class="user-avatar" id="userAvatar">Sign up</div>
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="user-dropdown-item" onclick="goToSettings()">Settings</div>
+                        <div class="user-dropdown-item" onclick="viewHistory()">History</div>
+                        <div class="user-dropdown-item" onclick="window.location.href='/feedback.html'">Feedback</div>
+                        <div class="user-dropdown-item" onclick="logout()">Logout</div>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="goToSettings()">⚙️</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3>Layer Controls</h3>
+                <div class="layer-controls">
+                    <label class="layer-toggle">
+                        <input type="checkbox" id="povertyLayer" checked>
+                        <span class="toggle-slider"></span>
+                        <span class="layer-label">Poverty Index</span>
+                    </label>
+                    <label class="layer-toggle">
+                        <input type="checkbox" id="educationLayer">
+                        <span class="toggle-slider"></span>
+                        <span class="layer-label">Education Access</span>
+                    </label>
+                    <label class="layer-toggle">
+                        <input type="checkbox" id="healthLayer">
+                        <span class="toggle-slider"></span>
+                        <span class="layer-label">Health Vulnerability</span>
+                    </label>
+                    <label class="layer-toggle">
+                        <input type="checkbox" id="waterLayer">
+                        <span class="toggle-slider"></span>
+                        <span class="layer-label">Water Access</span>
+                    </label>
+                    <label class="layer-toggle">
+                        <input type="checkbox" id="shelterLayer">
+                        <span class="toggle-slider"></span>
+                        <span class="layer-label">Housing Quality Index</span>
+                    </label>
+                </div>
+            </div>
+
+
+            <div class="sidebar-section">
+                <h3>Data Collection</h3>
+                <button class="btn btn-primary" id="questionnaireBtn" style="width: 100%; margin-bottom: 10px;">
+                     Start Poverty Assessment
+                </button>
+                <p class="form-help">Use the questionnaire to collect data for new locations and calculate poverty indices.</p>
+            </div>
+
+            <!-- Account Status -->
+            <div class="sidebar-section" id="accountStatusSection">
+                <h3>Account Status</h3>
+                <div class="account-status-display">
+                    <div class="status-indicator-small" id="dashboardAccountStatus">Trial Account</div>
+                    <div class="premium-countdown" id="premiumCountdown" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="sidebar-section">
+                <h3>Quick Actions</h3>
+                <a href="/feedback.html" class="quick-action-link">
+                    <span class="quick-action-icon">💬</span>
+                    <span class="quick-action-text">Feedback & Support</span>
+                    <span class="quick-action-arrow">→</span>
+                </a>
+            </div>
+
+            <!-- Footer in Sidebar -->
+            <div class="sidebar-footer">
+                <div class="sidebar-footer-content">
+                    <p class="sidebar-footer-tagline">Empowering communities through data-driven insights ✨</p>
+                    <p class="sidebar-footer-copyright">© 2025 | Designed by Mary Wairimu</p>
+                </div>
+            </div>
+            
+        </aside>
+
+        <!-- Layer Controls Mobile (shown only on mobile, before map) -->
+        <div class="layer-controls-mobile">
+            <div class="sidebar-section">
+                <h3>Layer Controls</h3>
+                <div class="layer-controls">
+                    <label class="layer-toggle">
+                        <input type="checkbox" id="povertyLayerMobile" checked>
+                        <span class="toggle-slider"></span>
+                        <span class="layer-label">Poverty Index</span>
+                    </label>
+                    <label class="layer-toggle">
+                        <input type="checkbox" id="educationLayerMobile">
+                        <span class="toggle-slider"></span>
+                        <span class="layer-label">Education Access</span>
+                    </label>
+                    <label class="layer-toggle">
+                        <input type="checkbox" id="healthLayerMobile">
+                        <span class="toggle-slider"></span>
+                        <span class="layer-label">Health Vulnerability</span>
+                    </label>
+                    <label class="layer-toggle">
+                        <input type="checkbox" id="waterLayerMobile">
+                        <span class="toggle-slider"></span>
+                        <span class="layer-label">Water Access</span>
+                    </label>
+                    <label class="layer-toggle">
+                        <input type="checkbox" id="shelterLayerMobile">
+                        <span class="toggle-slider"></span>
+                        <span class="layer-label">Housing Quality Index</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map Section -->
+        <section class="map-section">
+            <!-- TopBar Component: Search Bar and Map Controls -->
+            <div class="top-bar" id="topBar">
+                        <!-- Search Bar Section (Left) -->
+                        <div class="top-bar-search">
+                            <div class="search-bar-wrapper">
+                                <div class="search-icon">🔍</div>
+                                <input 
+                                    type="text" 
+                                    id="dashboardLocationSearchInput" 
+                                    class="location-search-input"
+                                    placeholder="Search any location in Kenya..."
+                                    autocomplete="off"
+                                />
+                                <div class="search-results" id="dashboardSearchResults"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Map Controls Panel (Right Side) - Fixed width to prevent layout shift -->
+                        <div class="top-bar-controls">
+                            <div class="map-control-panel collapsed" id="mapControlPanel">
+                            <div class="control-panel-header">
+                                <h5>Map Controls</h5>
+                                <button class="control-panel-toggle" id="controlPanelToggle" aria-label="Toggle control panel">
+                                    <span class="toggle-icon">▼</span>
+                                </button>
+                            </div>
+                            <div class="control-panel-content collapsed" id="controlPanelContent">
+                                <!-- Zoom Controls Section -->
+                                <div class="control-section">
+                                    <div class="control-section-title">Zoom</div>
+                                    <div class="control-buttons">
+                                        <button class="control-btn" id="zoomInBtn" title="Zoom In" aria-label="Zoom In">
+                                            <span class="control-icon">➕</span>
+                                            <span class="control-label">Zoom In</span>
+                                        </button>
+                                        <button class="control-btn" id="zoomOutBtn" title="Zoom Out" aria-label="Zoom Out">
+                                            <span class="control-icon">➖</span>
+                                            <span class="control-label">Zoom Out</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Navigation Controls Section -->
+                                <div class="control-section">
+                                    <div class="control-section-title">Navigation</div>
+                                    <div class="control-buttons">
+                                        <button class="control-btn" id="locateBtn" title="Show My Location" aria-label="Show My Location">
+                                            <span class="control-icon">📍</span>
+                                            <span class="control-label">My Location</span>
+                                        </button>
+                                        <button class="control-btn" id="resetViewBtn" title="Reset View" aria-label="Reset View">
+                                            <span class="control-icon">🏠</span>
+                                            <span class="control-label">Reset View</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Layer Controls Section -->
+                                <div class="control-section">
+                                    <div class="control-section-title">Layers</div>
+                                    <div class="control-buttons">
+                                        <button class="control-btn" id="toggleLayersBtn" title="Toggle Layers" aria-label="Toggle Layers">
+                                            <span class="control-icon">🗺️</span>
+                                            <span class="control-label">Toggle Layers</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Map Style Section -->
+                                <div class="control-section">
+                                    <div class="control-section-title">Map Style</div>
+                                    <div class="control-buttons" style="gap: 8px;">
+                                        <select id="mapStyleControl" class="control-select" aria-label="Map Style">
+                                            <option value="default">Default</option>
+                                            <option value="satellite">Satellite</option>
+                                            <option value="terrain">Terrain</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <!-- Legend Section -->
+                                <div class="control-section">
+                                    <div class="control-section-title">Legend</div>
+                                <div class="legend-panel">
+                                        <h5 class="legend-panel-title">Poverty Severity</h5>
+                                        <div class="legend-items-panel">
+                                            <div class="legend-item-panel">
+                                                <div class="legend-color critical"></div>
+                                                <span>Critical (70+)</span>
+                                            </div>
+                                            <div class="legend-item-panel">
+                                                <div class="legend-color high"></div>
+                                                <span>High (50-70)</span>
+                                            </div>
+                                            <div class="legend-item-panel">
+                                                <div class="legend-color moderate"></div>
+                                                <span>Moderate (30-50)</span>
+                                            </div>
+                                            <div class="legend-item-panel">
+                                                <div class="legend-color low"></div>
+                                                <span>Low (0-30)</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Severity Distribution Summary -->
+                                        <div class="severity-summary-panel legend-summary-panel">
+                                            <h6 class="legend-summary-heading">Distribution</h6>
+                                            <div class="legend-summary-row">
+                                                <div class="legend-summary-label">
+                                                    <div class="legend-color critical legend-color-small"></div>
+                                                    <span>Critical:</span>
+                                                </div>
+                                                <span id="dashboardCritical" class="legend-summary-value critical-value">0</span>
+                                            </div>
+                                            <div class="legend-summary-row">
+                                                <div class="legend-summary-label">
+                                                    <div class="legend-color high legend-color-small"></div>
+                                                    <span>High:</span>
+                                                </div>
+                                                <span id="dashboardHigh" class="legend-summary-value high-value">0</span>
+                                            </div>
+                                            <div class="legend-summary-row">
+                                                <div class="legend-summary-label">
+                                                    <div class="legend-color moderate legend-color-small"></div>
+                                                    <span>Moderate:</span>
+                                                </div>
+                                                <span id="dashboardModerate" class="legend-summary-value moderate-value">0</span>
+                                            </div>
+                                            <div class="legend-summary-row">
+                                                <div class="legend-summary-label">
+                                                    <div class="legend-color low legend-color-small"></div>
+                                                    <span>Low:</span>
+                                                </div>
+                                                <span id="dashboardLow" class="legend-summary-value low-value">0</span>
+                                            </div>
+                                        </div>
+                                </div>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+            <!-- Map Container -->
+            <div class="map-container">
+                <div id="dashboard-map"></div>
+            </div>
+            
+            <!-- Dashboard Overview -->
+            <div class="dashboard-overview">
+                <!-- Other Dashboard Cards -->
+                <div class="overview-cards">
+                    <div class="overview-card">
+                        <div class="card-icon">📊</div>
+                        <div class="card-content">
+                            <h3>Analytics Dashboard</h3>
+                            <p>Comprehensive poverty analysis with real-time data visualization and reporting.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card">
+                        <div class="card-icon">🧮</div>
+                        <div class="card-content">
+                            <h3>Poverty Models</h3>
+                            <p>Advanced machine learning models for poverty prediction and analysis.</p>
+                            <a href="/poverty-models.html" class="btn btn-secondary">View Models</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Statistics Section -->
+        <section class="stats-section">
+            <div class="stats-header">
+                <h3>Selected Area Analytics</h3>
+                <div class="stats-controls-bar">
+                    <div class="stats-controls-left">
+                        <span class="last-updated" id="lastUpdated">--:--:--</span>
+                    </div>
+                    <div class="stats-controls-right">
+                        <button class="btn btn-secondary btn-sm" id="refreshStatsBtn">
+                            <span>🔄</span> Refresh
+                        </button>
+                        <div id="exportControls"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-content">
+                        <h4>Poverty Index</h4>
+                        <div class="stat-metric">
+                            <span class="metric-value" id="povertyMetric">0.0</span>
+                            <span class="metric-unit">%</span>
+                        </div>
+                        <div class="stat-trend">
+                            <span class="trend-icon">📈</span>
+                            <span class="trend-text">Select area</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">🎓</div>
+                    <div class="stat-content">
+                        <h4>Education Access</h4>
+                        <div class="stat-metric">
+                            <span class="metric-value" id="educationMetric">0.0</span>
+                            <span class="metric-unit">%</span>
+                        </div>
+                        <div class="stat-trend">
+                            <span class="trend-icon">📈</span>
+                            <span class="trend-text">Select area</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">🏥</div>
+                    <div class="stat-content">
+                        <h4>Health Vulnerability</h4>
+                        <div class="stat-metric">
+                            <span class="metric-value" id="healthMetric">0.0</span>
+                            <span class="metric-unit">%</span>
+                        </div>
+                        <div class="stat-trend">
+                            <span class="trend-icon">📉</span>
+                            <span class="trend-text">Select area</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">🏠</div>
+                    <div class="stat-content">
+                        <h4>Shelter Quality Index</h4>
+                        <div class="stat-metric">
+                            <span class="metric-value" id="shelterMetric">0.0</span>
+                            <span class="metric-unit">%</span>
+                        </div>
+                        <div class="stat-trend">
+                            <span class="trend-icon">📈</span>
+                            <span class="trend-text">Select area</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analytics Section -->
+        <section class="analytics-section">
+            <div class="analytics-header">
+                <h3>AI-Powered Insights</h3>
+                <div class="analytics-controls">
+                    <select id="insightType" class="filter-select">
+                        <option value="trends">Trend Analysis</option>
+                        <option value="predictions">Predictions</option>
+                        <option value="recommendations">Recommendations</option>
+                        <option value="comparisons">Regional Comparisons</option>
+                    </select>
+                    <button class="btn btn-secondary" id="generateInsights">Generate Insights</button>
+                </div>
+            </div>
+            
+            <div class="analytics-grid">
+                <div class="chart-container">
+                    <h4>Small-Area Estimation (SAE)</h4>
+                    <canvas id="saeChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h4>Consumption-Based Estimates</h4>
+                    <canvas id="consumptionChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h4>Smart Predictions</h4>
+                    <canvas id="predictionsChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h4>Impact Forecast</h4>
+                    <canvas id="impactChart"></canvas>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-info">
+                <span class="footer-tagline">Empowering communities through data-driven insights ✨</span>
+                <p class="footer-copyright">© 2025 | Designed by Mary Wairimu</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Connection Status (moved to bottom) -->
+    <div class="connection-status connection-status-bubble" id="connectionStatus">
+        <span class="status-dot offline"></span>
+        <span class="status-text">Offline Mode</span>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading IPMAS System...</div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="scripts/config.js?v=20241022"></script>
+    <script src="scripts/location-heuristics.js?v=20250120"></script>
+    <script src="scripts/subscription.js?v=20250120"></script>
+    <script src="scripts/usage-tracker.js"></script>
+    <script src="scripts/user-data-api.js?v=20250120"></script>
+    <script src="scripts/data-migration.js?v=20250120"></script>
+    <script src="data/sample-data-enhanced.js?v=20250120-2"></script>
+    <script src="scripts/dynamic-poverty-calculator.js?v=20250103"></script>
+    <script src="scripts/questionnaire.js?v=20250103"></script>
+    <script src="scripts/data-export.js?v=20250103"></script>
+    <script src="scripts/sharing.js?v=20250103"></script>
+    <script src="scripts/drill-down-visualization.js?v=20250103"></script>
+    <script src="scripts/notifications.js?v=20250103"></script>
+    <script src="scripts/main.js?v=20250120"></script>
+    
+    <!-- Dashboard Location Search Functionality -->
+    <script>
+        // Global variables for dashboard search
+        let dashboardSearchMarker = null;
+        let dashboardSearchResultsList = [];
+
+        // Initialize dashboard search functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('dashboardLocationSearchInput');
+            const searchResults = document.getElementById('dashboardSearchResults');
+
+            if (!searchInput) return;
+
+            // Allow Enter key to search
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performDashboardLocationSearch();
+                }
+            });
+
+            // Auto-complete as user types (debounced)
+            let searchTimeout;
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                const query = searchInput.value.trim();
+                
+                if (query.length >= 2) {
+                    searchTimeout = setTimeout(() => {
+                        performDashboardAutoComplete(query);
+                    }, 500);
+                } else {
+                    searchResults.style.display = 'none';
+                }
+            });
+
+            // Hide results when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                    searchResults.style.display = 'none';
+                }
+            });
+        });
+
+        // Enhanced search function that handles coordinates, addresses, business names, keywords, and locale names
+        async function performDashboardLocationSearch() {
+            const searchInput = document.getElementById('dashboardLocationSearchInput');
+            const query = searchInput.value.trim();
+
+            if (!query) {
+                return;
+            }
+
+            // Check trial limit before performing search
+            if (window.usageTracker) {
+                const canSearch = window.usageTracker.checkAndTrack('search', () => {
+                    // Search is allowed, continue with search
+                });
+                
+                if (!canSearch) {
+                    // Trial limit reached, redirect will happen in checkAndTrack
+                    return;
+                }
+            }
+
+            try {
+                let lat, lng, locationData;
+
+                // Check if input is coordinates (lat, lng or lng, lat format)
+                const coordPattern = /^(-?\d+\.?\d*)\s*[,;]\s*(-?\d+\.?\d*)$/;
+                const coordMatch = query.match(coordPattern);
+                
+                if (coordMatch) {
+                    // Try lat,lng format first
+                    lat = parseFloat(coordMatch[1]);
+                    lng = parseFloat(coordMatch[2]);
+                    
+                    // Validate coordinates
+                    if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+                        // Valid coordinates - use reverse geocoding to get location name
+                        try {
+                            // Use backend proxy for reverse geocoding
+                            const reverseApiUrl = window.API_CONFIG 
+                                ? window.API_CONFIG.getApiUrl(`/api/v1/analytics/geocoding/reverse?lat=${lat}&lon=${lng}`)
+                                : `/api/v1/analytics/geocoding/reverse?lat=${lat}&lon=${lng}`;
+                            const reverseResponse = await fetch(reverseApiUrl);
+                            
+                            if (reverseResponse.ok) {
+                                const reverseData = await reverseResponse.json();
+                                locationData = {
+                                    lat: lat,
+                                    lon: lng,
+                                    display_name: reverseData.display_name || `${lat}, ${lng}`,
+                                    address: reverseData.address || {}
+                                };
+                            } else {
+                                // If reverse geocoding fails, use coordinates directly
+                                locationData = {
+                                    lat: lat,
+                                    lon: lng,
+                                    display_name: `${lat.toFixed(6)}, ${lng.toFixed(6)}`,
+                                    address: {}
+                                };
+                            }
+                        } catch (reverseError) {
+                            // Use coordinates directly if reverse geocoding fails
+                            locationData = {
+                                lat: lat,
+                                lon: lng,
+                                display_name: `${lat.toFixed(6)}, ${lng.toFixed(6)}`,
+                                address: {}
+                            };
+                        }
+                    } else {
+                        // Try swapping lat/lng if first attempt fails
+                        lat = parseFloat(coordMatch[2]);
+                        lng = parseFloat(coordMatch[1]);
+                        if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+                            try {
+                                // Use backend proxy for reverse geocoding
+                                const reverseApiUrl = window.API_CONFIG 
+                                    ? window.API_CONFIG.getApiUrl(`/api/v1/analytics/geocoding/reverse?lat=${lat}&lon=${lng}`)
+                                    : `/api/v1/analytics/geocoding/reverse?lat=${lat}&lon=${lng}`;
+                                const reverseResponse = await fetch(reverseApiUrl);
+                                
+                                if (reverseResponse.ok) {
+                                    const reverseData = await reverseResponse.json();
+                                    locationData = {
+                                        lat: lat,
+                                        lon: lng,
+                                        display_name: reverseData.display_name || `${lat}, ${lng}`,
+                                        address: reverseData.address || {}
+                                    };
+                                } else {
+                                    locationData = {
+                                        lat: lat,
+                                        lon: lng,
+                                        display_name: `${lat.toFixed(6)}, ${lng.toFixed(6)}`,
+                                        address: {}
+                                    };
+                                }
+                            } catch (reverseError) {
+                                locationData = {
+                                    lat: lat,
+                                    lon: lng,
+                                    display_name: `${lat.toFixed(6)}, ${lng.toFixed(6)}`,
+                                    address: {}
+                                };
+                            }
+                        } else {
+                            throw new Error('Invalid coordinates. Please use format: lat, lng or lng, lat');
+                        }
+                    }
+                } else {
+                    // Not coordinates - search by address, business name, keyword, or locale name
+                    let searchQuery = query.trim();
+                    if (!searchQuery.toLowerCase().includes('kenya')) {
+                        searchQuery = `${searchQuery}, Kenya`;
+                    }
+                    
+                    // Use backend proxy for geocoding search
+                    const apiUrl = window.API_CONFIG 
+                        ? window.API_CONFIG.getApiUrl(`/api/v1/analytics/geocoding/search?q=${encodeURIComponent(searchQuery)}&limit=5`)
+                        : `/api/v1/analytics/geocoding/search?q=${encodeURIComponent(searchQuery)}&limit=5`;
+                    
+                    const response = await fetch(apiUrl);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+
+                    const results = await response.json();
+                    
+                    // Filter for Kenya results
+                    const kenyaResults = results.filter(item => {
+                        const addr = item.address || {};
+                        return addr.country_code === 'ke' || addr.country === 'Kenya' || 
+                               (item.display_name && item.display_name.toLowerCase().includes('kenya'));
+                    });
+                    
+                    if (kenyaResults.length === 0) {
+                        // If no Kenya-specific results, use all results
+                        if (results.length === 0) {
+                            alert(`No locations found for "${query}"`);
+                            return;
+                        }
+                        locationData = results[0];
+                    } else {
+                        locationData = kenyaResults[0];
+                    }
+                    
+                    lat = parseFloat(locationData.lat);
+                    lng = parseFloat(locationData.lon);
+                }
+
+                // Wait for map to be initialized
+                if (!window.ipmasApp || !window.ipmasApp.dashboardMap) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+
+                // Center map and add marker
+                const mapToUse = window.ipmasApp?.dashboardMap || window.ipmasApp?.map;
+                if (window.ipmasApp && mapToUse) {
+                    // Remove existing search marker
+                    if (dashboardSearchMarker) {
+                        mapToUse.removeLayer(dashboardSearchMarker);
+                    }
+
+                    // Center map on location with smooth animation
+                    mapToUse.flyTo([lat, lng], 16, {
+                        duration: 1.5,
+                        easeLinearity: 0.25
+                    });
+
+                    // Create a more prominent custom marker icon with pin shape
+                    const searchMarkerIcon = L.divIcon({
+                        className: 'search-marker-icon',
+                        html: `
+                            <div style="
+                                position: relative;
+                                width: 32px;
+                                height: 32px;
+                                background: #ff4444;
+                                border: 3px solid white;
+                                border-radius: 50% 50% 50% 0;
+                                transform: rotate(-45deg);
+                                box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+                            ">
+                                <div style="
+                                    position: absolute;
+                                    top: 50%;
+                                    left: 50%;
+                                    transform: translate(-50%, -50%) rotate(45deg);
+                                    color: white;
+                                    font-size: 16px;
+                                    font-weight: bold;
+                                ">📍</div>
+                            </div>
+                        `,
+                        iconSize: [32, 32],
+                        iconAnchor: [16, 32],
+                        popupAnchor: [0, -32]
+                    });
+
+                    // Add marker with animation
+                    dashboardSearchMarker = L.marker([lat, lng], { 
+                        icon: searchMarkerIcon,
+                        title: locationData.display_name || query,
+                        zIndexOffset: 1000
+                    }).addTo(mapToUse);
+
+                    // Add bounce animation
+                    setTimeout(() => {
+                        if (dashboardSearchMarker) {
+                            dashboardSearchMarker.setIcon(searchMarkerIcon);
+                        }
+                    }, 100);
+
+                    // Create popup using EXACT SAME UI as training data clusters
+                    const address = locationData.address || {};
+                    const locationType = locationData.type || locationData.class || 'Location';
+                    const searchLocationId = `search-loc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                    
+                    // Parse Nominatim address to correctly identify Kenyan administrative hierarchy
+                    // Kenya structure: County → Sub-County → Ward → Location → Sub-Location
+                    const parseKenyanAdministrativeHierarchy = (addr) => {
+                        // County: Usually in 'county', 'state', or 'region' field
+                        // For Nairobi, it might be in 'state' or 'county'
+                        let county = addr.county || addr.state || '';
+                        
+                        // Handle special cases
+                        if (county && county.toLowerCase().includes('nairobi')) {
+                            county = 'Nairobi';
+                        }
+                        
+                        // Sub-County: Could be in 'city', 'district', 'municipality', 'suburb', or 'town'
+                        // For Nairobi: Sub-Counties include Kasarani, Lang'ata, Westlands, etc.
+                        let subCounty = '';
+                        // Check common fields for sub-county
+                        if (addr.city && addr.city !== county) {
+                            subCounty = addr.city;
+                        } else if (addr.district) {
+                            subCounty = addr.district;
+                        } else if (addr.municipality && addr.municipality !== county) {
+                            subCounty = addr.municipality;
+                        } else if (addr.suburb && addr.suburb.length > 0) {
+                            // For Nairobi, suburb might be the sub-county (e.g., Kasarani, Karen)
+                            // Check if it's a known sub-county name
+                            const knownSubCounties = ['Kasarani', 'Lang\'ata', 'Westlands', 'Embakasi', 'Kamukunji', 'Starehe', 'Makadara', 'Mathare', 'Dagoretti', 'Kibra'];
+                            if (knownSubCounties.some(sc => addr.suburb.toLowerCase().includes(sc.toLowerCase()))) {
+                                subCounty = addr.suburb;
+                            }
+                        }
+                        
+                        // Ward: Usually in 'ward' field, or might be in 'suburb' if not sub-county
+                        let ward = addr.ward || '';
+                        
+                        // If we have a suburb and it's not the sub-county, it might be the ward
+                        if (!ward && addr.suburb && addr.suburb !== subCounty) {
+                            ward = addr.suburb;
+                        }
+                        
+                        // Village/Location: Usually in 'neighbourhood', 'village', or 'suburb' (if not ward)
+                        let village = addr.neighbourhood || addr.village || '';
+                        if (!village && addr.suburb && addr.suburb !== subCounty && addr.suburb !== ward) {
+                            village = addr.suburb;
+                        }
+                        
+                        // Constituency: Sometimes in 'county' or separate field
+                        // For Nairobi, constituencies match sub-counties in many cases
+                        const constituency = addr.constituency || subCounty || '';
+                        
+                        return {
+                            county: county || 'Nairobi', // Default to Nairobi if in Nairobi area
+                            sub_county: subCounty,
+                            ward: ward,
+                            village: village,
+                            constituency: constituency
+                        };
+                    };
+                    
+                    // Parse the address hierarchy correctly
+                    const adminHierarchy = parseKenyanAdministrativeHierarchy(address);
+                    
+                    // Format location name hierarchically (like training data)
+                    const formatLocationName = (loc) => {
+                        const parts = [];
+                        // Order: Village → Ward → Sub-County → County
+                        if (loc.village && loc.village.trim() !== '') parts.push(loc.village);
+                        if (loc.ward && loc.ward.trim() !== '') parts.push(loc.ward);
+                        if (loc.sub_county && loc.sub_county.trim() !== '') parts.push(loc.sub_county);
+                        if (loc.county && loc.county.trim() !== '' && loc.county !== 'Unknown') parts.push(loc.county);
+                        return parts.length > 0 ? parts.join(', ') : loc.display_name || loc.name || 'Unknown Location';
+                    };
+                    
+                    const formattedLocation = formatLocationName({
+                        ...adminHierarchy,
+                        display_name: locationData.display_name,
+                        name: locationData.name || query
+                    });
+                    
+                    // Prepare location data for DynamicPovertyCalculator (same as training data)
+                    const fullLocationData = {
+                        lat: lat,
+                        lng: lng,
+                        id: searchLocationId,
+                        name: locationData.display_name || query,
+                        location_name: locationData.display_name || query,
+                        county: adminHierarchy.county || 'Unknown',
+                        sub_county: adminHierarchy.sub_county || '',
+                        ward: adminHierarchy.ward || '',
+                        village: adminHierarchy.village || '',
+                        constituency: adminHierarchy.constituency || '',
+                        // Default indicator values (will be calculated by DynamicPovertyCalculator)
+                        poverty_index: null,
+                        education_access: null,
+                        health_vulnerability: null,
+                        water_access: null,
+                        housing_quality: null,
+                        employment_rate: null,
+                        address: address
+                    };
+                    
+                    // Fetch REAL indicator data from API/database for this location
+                    // PRIORITY: 1. Heuristics (known areas), 2. Name search, 3. Coordinates, 4. Nearby, 5. Defaults
+                    const fetchRealLocationData = async (lat, lng, locationName = null, county = null) => {
+                        try {
+                            // STEP 0: Check location heuristics first (for known affluent/poor areas)
+                            if (locationName && typeof LocationHeuristics !== 'undefined') {
+                                const heuristics = new LocationHeuristics();
+                                const heuristicsData = heuristics.getLocationData(locationName, county);
+                                if (heuristicsData) {
+                                    console.log(`✅ Using heuristics data for known area: ${locationName} (${heuristicsData.matchedArea})`);
+                                    return {
+                                        poverty_index: heuristicsData.poverty_index,
+                                        education_access: heuristicsData.education_access,
+                                        health_vulnerability: heuristicsData.health_vulnerability,
+                                        water_access: heuristicsData.water_access,
+                                        housing_quality: heuristicsData.housing_quality,
+                                        employment_rate: heuristicsData.employment_rate,
+                                        source: heuristicsData.source || 'heuristics',
+                                        confidence: heuristicsData.confidence || 'high',
+                                        matchedArea: heuristicsData.matchedArea
+                                    };
+                                }
+                            }
+                            
+                            // STEP 1: Try searching by NAME first (most accurate for known locations like Karen, Kibera)
+                            if (locationName) {
+                                console.log(`🔍 Searching by name first: "${locationName}"`);
+                                
+                                // Extract the main location name (e.g., "Karen" from "Karen, Karen ward, Langata...")
+                                const mainName = locationName.split(',')[0].trim();
+                                
+                                // Also try with county if available
+                                const searchQueries = [mainName];
+                                if (county && county !== mainName) {
+                                    searchQueries.push(`${mainName}, ${county}`);
+                                }
+                                
+                                for (const searchQuery of searchQueries) {
+                                    try {
+                                        const nameSearchUrl = window.API_CONFIG 
+                                            ? window.API_CONFIG.getApiUrl(`/api/v1/location/search?query=${encodeURIComponent(searchQuery)}`)
+                                            : `http://localhost:3001/api/v1/location/search?query=${encodeURIComponent(searchQuery)}`;
+                                        
+                                        const nameResponse = await fetch(nameSearchUrl, {
+                                            method: 'GET',
+                                            headers: {
+                                                'Accept': 'application/json',
+                                                'Content-Type': 'application/json'
+                                            }
+                                        });
+                                        
+                                        // Handle both 200 (success) and 500 (error but returns empty results)
+                                        if (nameResponse.ok || nameResponse.status === 500) {
+                                            // Even if 500, try to parse response as it might have empty results
+                                            let nameData;
+                                            try {
+                                                nameData = await nameResponse.json();
+                                            } catch (parseError) {
+                                                // If parsing fails, continue to next search method
+                                                console.log(`ℹ️ Could not parse response for "${searchQuery}", trying next method...`);
+                                                continue;
+                                            }
+                                            
+                                            // Check if we got valid data (even if status was 500)
+                                            if (nameData && nameData.success !== false && nameData.data && nameData.data.length > 0) {
+                                                // Find exact match first - prioritize exact name match
+                                                let exactMatch = nameData.data.find(loc => {
+                                                    const locName = (loc.name || '').toLowerCase().trim();
+                                                    return locName === mainName.toLowerCase().trim();
+                                                });
+                                                
+                                                // If no exact match, try partial match (name starts with search term)
+                                                if (!exactMatch) {
+                                                    exactMatch = nameData.data.find(loc => {
+                                                        const locName = (loc.name || '').toLowerCase().trim();
+                                                        return locName.startsWith(mainName.toLowerCase().trim()) || 
+                                                               mainName.toLowerCase().trim().startsWith(locName);
+                                                    });
+                                                }
+                                                
+                                                // If still no match, use first result but log warning
+                                                const matchedLocation = exactMatch || nameData.data[0];
+                                                
+                                                if (!exactMatch) {
+                                                    console.warn(`⚠️ No exact name match found. Using first result: "${matchedLocation.name}"`);
+                                                }
+                                                
+                                                // Calculate distance (use lat/lng or latitude/longitude fields)
+                                                const locLat = parseFloat(matchedLocation.latitude || matchedLocation.lat);
+                                                const locLng = parseFloat(matchedLocation.longitude || matchedLocation.lng || matchedLocation.lon);
+                                                
+                                                if (isNaN(locLat) || isNaN(locLng)) {
+                                                    console.warn(`⚠️ Location "${matchedLocation.name}" has invalid coordinates, using anyway`);
+                                                } else {
+                                                    const distance = Math.sqrt(
+                                                        Math.pow(lat - locLat, 2) + Math.pow(lng - locLng, 2)
+                                                    ) * 111; // Convert to km
+                                                    
+                                                    console.log(`📍 Location "${matchedLocation.name}": distance ${distance.toFixed(2)}km, poverty_index: ${matchedLocation.poverty_index}`);
+                                                    
+                                                    // Accept if within 10km (increased from 5km for better matching)
+                                                    if (distance < 10) {
+                                                        console.log(`✅ Found match by name: "${matchedLocation.name}" (${distance.toFixed(2)}km away, poverty: ${matchedLocation.poverty_index}%)`);
+                                                        return {
+                                                            poverty_index: matchedLocation.poverty_index || null,
+                                                            education_access: matchedLocation.education_access || null,
+                                                            health_vulnerability: matchedLocation.health_vulnerability || null,
+                                                            water_access: matchedLocation.water_access || null,
+                                                            housing_quality: matchedLocation.housing_quality || null,
+                                                            employment_rate: matchedLocation.employment_rate || null,
+                                                            source: exactMatch ? 'exact_name_match' : 'name_match',
+                                                            matched_name: matchedLocation.name,
+                                                            distance: distance.toFixed(2) + 'km',
+                                                            original_poverty: matchedLocation.poverty_index
+                                                        };
+                                                    } else {
+                                                        console.warn(`⚠️ Location "${matchedLocation.name}" is too far (${distance.toFixed(2)}km), skipping...`);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    } catch (nameError) {
+                                        console.log(`ℹ️ Name search failed for "${searchQuery}", trying coordinates...`);
+                                    }
+                                }
+                            }
+                            
+                            // STEP 2: If name search failed, try by coordinates
+                            console.log(`🔍 Searching by coordinates: ${lat}, ${lng}`);
+                            const apiUrl = window.API_CONFIG 
+                                ? window.API_CONFIG.getApiUrl(`/api/v1/unified-data/location/${lat}/${lng}`)
+                                : `http://localhost:3001/api/v1/unified-data/location/${lat}/${lng}`;
+                            
+                            const response = await fetch(apiUrl, {
+                                method: 'GET',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+                            
+                            if (response.ok) {
+                                const data = await response.json();
+                                console.log('✅ Real data fetched by coordinates:', data);
+                                
+                                if (data.success && data.indicators) {
+                                    // Use real indicator data from API
+                                    return {
+                                        poverty_index: data.indicators.poverty_index || null,
+                                        education_access: data.indicators.education_access || null,
+                                        health_vulnerability: data.indicators.health_vulnerability || null,
+                                        water_access: data.indicators.water_access || null,
+                                        housing_quality: data.indicators.housing_quality || null,
+                                        employment_rate: data.indicators.employment_rate || null,
+                                        source: 'coordinates' // Mark as coordinate-based match
+                                    };
+                                } else if (data.location) {
+                                    // Fallback: use location data directly
+                                    return {
+                                        poverty_index: data.location.poverty_index || null,
+                                        education_access: data.location.education_access || null,
+                                        health_vulnerability: data.location.health_vulnerability || null,
+                                        water_access: data.location.water_access || null,
+                                        housing_quality: data.location.housing_quality || null,
+                                        employment_rate: data.location.employment_rate || null,
+                                        source: 'coordinates'
+                                    };
+                                }
+                            } else if (response.status === 404) {
+                                // Silently handle 404 - this is expected when location not in database
+                                // Don't log as error, just try nearby locations
+                                console.log('ℹ️ No exact match found, trying nearby locations...');
+                                
+                                // Try to get nearby locations (within 5km radius)
+                                try {
+                                    const nearbyUrl = window.API_CONFIG 
+                                        ? window.API_CONFIG.getApiUrl(`/api/v1/analytics/poverty/all`)
+                                        : `http://localhost:3001/api/v1/analytics/poverty/all`;
+                                    
+                                    const nearbyResponse = await fetch(nearbyUrl);
+                                    if (nearbyResponse.ok) {
+                                        const geoJsonData = await nearbyResponse.json();
+                                        if (geoJsonData.features && geoJsonData.features.length > 0) {
+                                            // Find nearest location
+                                            let nearest = null;
+                                            let minDistance = Infinity;
+                                            
+                                            geoJsonData.features.forEach(feature => {
+                                                const [lng2, lat2] = feature.geometry.coordinates;
+                                                const distance = Math.sqrt(
+                                                    Math.pow(lat - lat2, 2) + Math.pow(lng - lng2, 2)
+                                                ) * 111; // Convert to km (rough approximation)
+                                                
+                                                if (distance < minDistance && distance < 10) { // Within 10km (increased radius)
+                                                    minDistance = distance;
+                                                    nearest = feature.properties;
+                                                }
+                                            });
+                                            
+                                            if (nearest) {
+                                                console.log(`✅ Found nearby location (${minDistance.toFixed(2)}km away):`, nearest);
+                                                
+                                                // Apply sanity checks using heuristics
+                                                let nearbyData = {
+                                                    poverty_index: nearest.poverty_index || null,
+                                                    education_access: nearest.education_access || null,
+                                                    health_vulnerability: nearest.health_vulnerability || null,
+                                                    water_access: nearest.water_access || null,
+                                                    housing_quality: nearest.housing_quality || null,
+                                                    employment_rate: nearest.employment_rate || null,
+                                                    source: 'nearby',
+                                                    distance: minDistance.toFixed(2) + 'km'
+                                                };
+                                                
+                                                // Sanity check: If location name suggests affluent/poor area, verify nearby data makes sense
+                                                if (locationName && typeof LocationHeuristics !== 'undefined') {
+                                                    const heuristics = new LocationHeuristics();
+                                                    const fallbackData = heuristics.getFallbackData(locationName, county, nearbyData);
+                                                    
+                                                    if (fallbackData && fallbackData.source && fallbackData.source.includes('heuristics')) {
+                                                        console.log(`⚠️ Nearby data failed sanity check for ${locationName}, using heuristics instead`);
+                                                        return fallbackData;
+                                                    }
+                                                    
+                                                    // Run sanity check
+                                                    if (nearbyData.poverty_index !== null) {
+                                                        const sanity = heuristics.sanityCheck(locationName, nearbyData.poverty_index, county);
+                                                        if (!sanity.passed) {
+                                                            console.warn(`⚠️ Sanity check failed: ${sanity.issue}. Using corrected value.`);
+                                                            nearbyData.poverty_index = sanity.corrected;
+                                                            nearbyData.source = 'nearby_corrected';
+                                                        }
+                                                    }
+                                                }
+                                                
+                                                return nearbyData;
+                                            }
+                                        }
+                                    }
+                                } catch (nearbyError) {
+                                    console.warn('⚠️ Error fetching nearby locations:', nearbyError);
+                                }
+                                
+                                // If no nearby location found, return null to use defaults
+                                console.log('⚠️ No nearby location found within 10km');
+                                return null;
+                            } else {
+                                console.warn(`⚠️ API returned status ${response.status}`);
+                                return null;
+                            }
+                        } catch (error) {
+                            // Silently handle network errors - this is expected when backend is offline
+                            // Only log if it's not a network error
+                            if (!error.message.includes('Failed to fetch') && !error.message.includes('NetworkError')) {
+                                console.warn('⚠️ Error fetching real data:', error);
+                            }
+                        }
+                        
+                        return null; // No real data found
+                    };
+                    
+                    // Provide default indicator values only if real data is not available
+                    // Uses heuristics if location name suggests known area
+                    const provideDefaultIndicators = (locationData, locationName = null, county = null) => {
+                        // First, try heuristics for known areas
+                        if (locationName && typeof LocationHeuristics !== 'undefined') {
+                            const heuristics = new LocationHeuristics();
+                            const heuristicsData = heuristics.getLocationData(locationName, county);
+                            if (heuristicsData) {
+                                console.log(`✅ Using heuristics defaults for ${locationName}`);
+                                Object.assign(locationData, heuristicsData);
+                                return locationData;
+                            }
+                        }
+                        
+                        // Otherwise use generic defaults
+                        // Only set defaults if value is null/undefined (not if it's 0)
+                        if (locationData.poverty_index === null || locationData.poverty_index === undefined) {
+                            locationData.poverty_index = 45; // Default moderate poverty
+                        }
+                        if (locationData.education_access === null || locationData.education_access === undefined) {
+                            locationData.education_access = 65; // Default moderate education
+                        }
+                        if (locationData.health_vulnerability === null || locationData.health_vulnerability === undefined) {
+                            locationData.health_vulnerability = 55; // Default moderate health
+                        }
+                        if (locationData.water_access === null || locationData.water_access === undefined) {
+                            locationData.water_access = 70; // Default good water access
+                        }
+                        if (locationData.housing_quality === null || locationData.housing_quality === undefined) {
+                            locationData.housing_quality = 60; // Default moderate housing
+                        }
+                        if (locationData.employment_rate === null || locationData.employment_rate === undefined) {
+                            locationData.employment_rate = 50; // Default moderate employment
+                        }
+                        return locationData;
+                    };
+                    
+                    // Fetch real data first, then apply defaults only for missing values
+                    // Pass location name and county for better name-based matching
+                    const realData = await fetchRealLocationData(
+                        lat, 
+                        lng, 
+                        formattedLocation || locationData.display_name || query,
+                        adminHierarchy.county
+                    );
+                    if (realData) {
+                        console.log('✅ Using real data from API:', realData);
+                        console.log(`📊 Data source: ${realData.source}`);
+                        if (realData.original_poverty !== undefined) {
+                            console.log(`📊 Original poverty_index from database: ${realData.original_poverty}%`);
+                        }
+                        if (realData.source === 'exact_name_match' || realData.source === 'name_match') {
+                            console.log(`✅ Name match found: "${realData.matched_name}" (${realData.distance || 'N/A'})`);
+                            if (realData.original_poverty && realData.original_poverty > 50) {
+                                console.warn(`⚠️ WARNING: Matched location has high poverty (${realData.original_poverty}%). This might not be the correct affluent area.`);
+                            }
+                        } else if (realData.source === 'nearby') {
+                            console.log(`⚠️ Using nearby location data (${realData.distance} away) - exact match not found`);
+                            console.warn(`⚠️ This may not be accurate for the searched location!`);
+                        }
+                        // Merge real data into location data
+                        Object.assign(fullLocationData, realData);
+                        // CRITICAL: Preserve original poverty_index for recalculation
+                        if (realData.poverty_index !== undefined && fullLocationData.original_poverty_index === undefined) {
+                            fullLocationData.original_poverty_index = realData.poverty_index;
+                        }
+                        
+                        // Request real-time enrichment if data is incomplete
+                        if (window.ipmasApp && window.ipmasApp.socket && window.ipmasApp.isConnected) {
+                            const missingIndicators = ['poverty_index', 'education_access', 'health_vulnerability', 
+                                                      'water_access', 'housing_quality'].filter(
+                                indicator => !realData[indicator] || realData[indicator] === null
+                            );
+                            
+                            if (missingIndicators.length > 0) {
+                                console.log(`📊 Requesting real-time enrichment for missing indicators: ${missingIndicators.join(', ')}`);
+                                window.ipmasApp.requestDataEnrichment({
+                                    lat: lat,
+                                    lng: lng,
+                                    name: formattedLocation || locationData.display_name || query,
+                                    county: adminHierarchy.county
+                                });
+                            }
+                        }
+                    } else {
+                        console.log('⚠️ No real data found, using defaults with heuristics');
+                        provideDefaultIndicators(fullLocationData, formattedLocation || locationData.display_name || query, adminHierarchy.county);
+                        
+                        // Request fallback data stream via Socket.IO
+                        if (window.ipmasApp && window.ipmasApp.socket && window.ipmasApp.isConnected) {
+                            console.log('🔄 Requesting fallback data stream via Socket.IO');
+                            window.ipmasApp.requestFallbackData({
+                                lat: lat,
+                                lng: lng,
+                                name: formattedLocation || locationData.display_name || query,
+                                county: adminHierarchy.county
+                            });
+                        }
+                    }
+                    
+                    // Function to recalculate and update popup (respects layer controls)
+                    const recalculateAndUpdatePopup = () => {
+                        let calculatedPovertyScore = 45; // Default fallback
+                        let povertyLevel = { level: 'Moderate', color: '#fee08b' };
+                        let calculationBreakdown = null;
+                        let confidenceScore = 85;
+                        
+                        // Helper function to create fallback popup (defined before use)
+                        const createFallbackPopup = () => {
+                            const fallbackBadge = '<span style="background: #999; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7rem; margin-left: 5px;">ESTIMATED</span>';
+                            return `
+                                <div class="poverty-popup" style="box-sizing: border-box; word-wrap: break-word; overflow-wrap: break-word;">
+                                    <h3 style="word-wrap: break-word; overflow-wrap: break-word; line-height: 1.4;">${fullLocationData.name || fullLocationData.location_name} ${fallbackBadge}</h3>
+                                    <p style="word-wrap: break-word; overflow-wrap: break-word; line-height: 1.5;"><strong>Location:</strong> ${formattedLocation}</p>
+                                    <p style="word-wrap: break-word; overflow-wrap: break-word; line-height: 1.5;"><strong>Calculated Poverty Score:</strong> 45.0%</p>
+                                    <p style="word-wrap: break-word; overflow-wrap: break-word; line-height: 1.5;"><strong>Level:</strong> Moderate</p>
+                                    <p style="word-wrap: break-word; overflow-wrap: break-word; line-height: 1.5;"><strong>Confidence:</strong> 50%</p>
+                                    <p style="font-size: 0.85rem; color: #666; margin-top: 8px; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.4;">⚠️ Calculation system unavailable - showing estimated values</p>
+                                </div>
+                            `;
+                        };
+                        
+                        try {
+                            if (typeof DynamicPovertyCalculator === 'undefined') {
+                                console.error('❌ DynamicPovertyCalculator not loaded!');
+                                console.warn('⚠️ Using fallback calculation values');
+                                // Return early with fallback values
+                                return {
+                                    popupContent: createFallbackPopup(),
+                                    calculatedPovertyScore: 45,
+                                    povertyLevel: { level: 'Moderate', color: '#fee08b' },
+                                    calculationBreakdown: null,
+                                    confidenceScore: 50
+                                };
+                            }
+                            
+                            // CRITICAL: Use ORIGINAL indicator values, not calculated ones!
+                            // The original_poverty_index was saved when data was first fetched
+                            const originalPovertyIndex = fullLocationData.original_poverty_index !== undefined 
+                                ? fullLocationData.original_poverty_index 
+                                : (fullLocationData.poverty_index && fullLocationData.poverty_index < 50 ? fullLocationData.poverty_index : null);
+                            
+                            // Create calculation data with ORIGINAL values
+                            const calculationData = {
+                                ...fullLocationData,
+                                // Use original poverty_index if available, otherwise use current (but log warning)
+                                poverty_index: originalPovertyIndex !== null ? originalPovertyIndex : fullLocationData.poverty_index,
+                                // Keep other indicators as-is (they shouldn't be overwritten)
+                                education_access: fullLocationData.education_access,
+                                health_vulnerability: fullLocationData.health_vulnerability,
+                                water_access: fullLocationData.water_access,
+                                housing_quality: fullLocationData.housing_quality,
+                                employment_rate: fullLocationData.employment_rate
+                            };
+                            
+                            if (originalPovertyIndex === null && fullLocationData.poverty_index > 50) {
+                                console.warn('⚠️ Using potentially incorrect poverty_index value. Original value may have been overwritten.');
+                            }
+                            
+                            // Ensure all indicators are present before calculation (only fill missing ones)
+                            // Pass location name for heuristics-based defaults
+                            provideDefaultIndicators(calculationData, fullLocationData.name || fullLocationData.location_name, fullLocationData.county);
+                            
+                            // Final sanity check before calculation
+                            if (typeof LocationHeuristics !== 'undefined' && calculationData.poverty_index !== null) {
+                                const heuristics = new LocationHeuristics();
+                                const sanity = heuristics.sanityCheck(
+                                    fullLocationData.name || fullLocationData.location_name || '',
+                                    calculationData.poverty_index,
+                                    fullLocationData.county
+                                );
+                                if (!sanity.passed) {
+                                    console.warn(`⚠️ Pre-calculation sanity check failed. Correcting poverty_index from ${calculationData.poverty_index} to ${sanity.corrected}`);
+                                    calculationData.poverty_index = sanity.corrected;
+                                    // Also update other indicators if heuristics data is available
+                                    const heuristicsData = heuristics.getLocationData(
+                                        fullLocationData.name || fullLocationData.location_name || '',
+                                        fullLocationData.county
+                                    );
+                                    if (heuristicsData) {
+                                        Object.assign(calculationData, heuristicsData);
+                                    }
+                                }
+                            }
+                            
+                            console.log('📊 Location data for calculation (ORIGINAL VALUES):', {
+                                poverty_index: calculationData.poverty_index,
+                                education_access: calculationData.education_access,
+                                health_vulnerability: calculationData.health_vulnerability,
+                                water_access: calculationData.water_access,
+                                housing_quality: calculationData.housing_quality,
+                                original_poverty_saved: fullLocationData.original_poverty_index
+                            });
+                            
+                            const calculator = new DynamicPovertyCalculator();
+                            // CRITICAL: Update active layers from current checkbox states
+                            calculator.updateActiveLayers();
+                            console.log('✅ Active layers:', Array.from(calculator.activeLayers));
+                            
+                            const calculation = calculator.calculateLocationPovertyIndex(calculationData);
+                            console.log('✅ Calculation result:', calculation);
+                            
+                            if (!calculation || typeof calculation.poverty_index !== 'number') {
+                                throw new Error('Invalid calculation result');
+                            }
+                            
+                            calculatedPovertyScore = calculation.poverty_index;
+                            povertyLevel = calculator.getPovertyLevel(calculatedPovertyScore);
+                            calculationBreakdown = calculation.breakdown;
+                            confidenceScore = calculation.confidence || 85;
+                            
+                            // Validate calculated score
+                            if (isNaN(calculatedPovertyScore) || calculatedPovertyScore < 0 || calculatedPovertyScore > 100) {
+                                console.warn('⚠️ Calculated score out of range, using fallback');
+                                calculatedPovertyScore = 45;
+                                povertyLevel = { level: 'Moderate', color: '#fee08b' };
+                                confidenceScore = 50;
+                            }
+                            
+                            // Store calculated values separately - DO NOT overwrite original poverty_index!
+                            fullLocationData.calculated_poverty_index = calculatedPovertyScore;
+                            fullLocationData.calculation_breakdown = calculationBreakdown;
+                            fullLocationData.confidence = confidenceScore;
+                            // Preserve original poverty_index for future recalculations
+                            if (fullLocationData.original_poverty_index === undefined && originalPovertyIndex !== null) {
+                                fullLocationData.original_poverty_index = originalPovertyIndex;
+                            }
+                            
+                            console.log('✅ Poverty calculated:', calculatedPovertyScore, 'Level:', povertyLevel);
+                            console.log('✅ Data source:', fullLocationData.source || 'defaults');
+                        } catch (calcError) {
+                            console.error('❌ Calculation error:', calcError);
+                            console.error('Error stack:', calcError.stack);
+                            console.error('Location data:', fullLocationData);
+                            // Provide fallback values
+                            calculatedPovertyScore = 45;
+                            povertyLevel = { level: 'Moderate', color: '#fee08b' };
+                            confidenceScore = 50;
+                            calculationBreakdown = null;
+                        }
+                        
+                        // Ensure calculatedPovertyScore is a valid number
+                        const safePovertyScore = typeof calculatedPovertyScore === 'number' && !isNaN(calculatedPovertyScore) 
+                            ? calculatedPovertyScore 
+                            : 45;
+                        
+                        // Create popup content EXACTLY like training data clusters (line 619-631 in poverty-map.js)
+                        const dataSourceBadge = fullLocationData.source === 'api' 
+                            ? '<span style="background: #4caf50; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7rem; margin-left: 5px;">REAL DATA</span>'
+                            : fullLocationData.source === 'nearby'
+                            ? `<span style="background: #ff9800; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7rem; margin-left: 5px;">NEARBY (${fullLocationData.distance || '~'})</span>`
+                            : '<span style="background: #999; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7rem; margin-left: 5px;">ESTIMATED</span>';
+                        
+                        // Prepare location data for detailed report (same format as training clusters)
+                        const reportLocationData = {
+                            ...fullLocationData,
+                            poverty_index: safePovertyScore,
+                            calculated_poverty_score: safePovertyScore,
+                            level: (typeof povertyLevel === 'object' ? povertyLevel.level : povertyLevel) || 'Unknown',
+                            confidence: confidenceScore || null,
+                            name: fullLocationData.name || fullLocationData.location_name,
+                            location_name: fullLocationData.location_name || fullLocationData.name,
+                            formatted_location: formattedLocation
+                        };
+                        
+                        const popupContent = `
+                            <div class="poverty-popup" style="box-sizing: border-box; word-wrap: break-word; overflow-wrap: break-word;">
+                                <h3 style="word-wrap: break-word; overflow-wrap: break-word; line-height: 1.4;">${fullLocationData.name || fullLocationData.location_name} ${dataSourceBadge}</h3>
+                                <p style="word-wrap: break-word; overflow-wrap: break-word; line-height: 1.5;"><strong>Location:</strong> ${formattedLocation}</p>
+                                <p style="word-wrap: break-word; overflow-wrap: break-word; line-height: 1.5;"><strong>Calculated Poverty Score:</strong> ${safePovertyScore.toFixed(1)}%</p>
+                                <p style="word-wrap: break-word; overflow-wrap: break-word; line-height: 1.5;"><strong>Level:</strong> ${(typeof povertyLevel === 'object' ? povertyLevel.level : povertyLevel) || 'Unknown'}</p>
+                                ${confidenceScore ? `<p style="word-wrap: break-word; overflow-wrap: break-word; line-height: 1.5;"><strong>Confidence:</strong> ${confidenceScore}%</p>` : ''}
+                                ${calculationBreakdown ? `
+                                    <button onclick="showLocationBreakdown(${JSON.stringify(fullLocationData).replace(/"/g, '&quot;')})" 
+                                            style="background: var(--primary-color); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-top: 12px; width: 100%; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; box-sizing: border-box; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; line-height: 1.4;">
+                                        📊 Calculation Breakdown
+                                    </button>
+                                ` : ''}
+                                <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid var(--border-color);">
+                                    <a href="/area-report.html" onclick="event.preventDefault(); if (typeof openFullReport === 'function') { openFullReport(${JSON.stringify(reportLocationData).replace(/"/g, '&quot;')}); } else { sessionStorage.setItem('areaReportData', JSON.stringify(${JSON.stringify(reportLocationData).replace(/"/g, '&quot;')})); window.location.href='/area-report.html'; } return false;" 
+                                       style="display: inline-block; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center; width: 100%; margin-top: 8px; box-sizing: border-box; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; line-height: 1.4;">
+                                        📄 View Full Detailed Report
+                                    </a>
+                                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 8px; text-align: center; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.4;">
+                                        Get comprehensive insights, charts, and downloadable PDF report
+                                    </p>
+                                </div>
+                            </div>
+                        `;
+                        
+                        return { popupContent, calculatedPovertyScore: safePovertyScore, povertyLevel, calculationBreakdown, confidenceScore };
+                    };
+                    
+                    // Initial calculation
+                    console.log('🔍 Starting calculation for searched location:', fullLocationData);
+                    
+                    // Ensure we have valid data before calculating
+                    if (!fullLocationData || typeof fullLocationData !== 'object') {
+                        console.error('❌ Invalid location data:', fullLocationData);
+                        alert('Invalid location data. Please try searching again.');
+                        return;
+                    }
+                    
+                    // Verify DynamicPovertyCalculator is available
+                    if (typeof DynamicPovertyCalculator === 'undefined') {
+                        console.error('❌ DynamicPovertyCalculator not loaded!');
+                        alert('Calculation system not loaded. Please refresh the page.');
+                        return;
+                    }
+                    
+                    const initialCalc = recalculateAndUpdatePopup();
+                    console.log('✅ Initial calculation complete:', initialCalc);
+                    
+                    // Check if calculation produced valid results
+                    if (!initialCalc) {
+                        console.error('❌ Calculation failed - no result returned');
+                        alert('Unable to calculate poverty index. Please check console for errors.');
+                        return;
+                    }
+                    
+                    // Ensure popup content exists (create fallback if needed)
+                    if (!initialCalc.popupContent) {
+                        console.warn('⚠️ No popup content, creating fallback');
+                        const fallbackBadge = '<span style="background: #999; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7rem; margin-left: 5px;">ESTIMATED</span>';
+                        const fallbackPovertyScore = initialCalc.calculatedPovertyScore || 45;
+                        const fallbackReportData = {
+                            ...fullLocationData,
+                            poverty_index: fallbackPovertyScore,
+                            calculated_poverty_score: fallbackPovertyScore,
+                            level: (typeof initialCalc.povertyLevel === 'object' ? initialCalc.povertyLevel.level : initialCalc.povertyLevel) || 'Moderate',
+                            confidence: initialCalc.confidenceScore || 50,
+                            name: fullLocationData.name || fullLocationData.location_name,
+                            location_name: fullLocationData.location_name || fullLocationData.name,
+                            formatted_location: formattedLocation
+                        };
+                        initialCalc.popupContent = `
+                            <div class="poverty-popup" style="box-sizing: border-box; word-wrap: break-word; overflow-wrap: break-word;">
+                                <h3 style="word-wrap: break-word; overflow-wrap: break-word; line-height: 1.4;">${fullLocationData.name || fullLocationData.location_name} ${fallbackBadge}</h3>
+                                <p style="word-wrap: break-word; overflow-wrap: break-word; line-height: 1.5;"><strong>Location:</strong> ${formattedLocation}</p>
+                                <p style="word-wrap: break-word; overflow-wrap: break-word; line-height: 1.5;"><strong>Calculated Poverty Score:</strong> ${fallbackPovertyScore.toFixed(1)}%</p>
+                                <p style="word-wrap: break-word; overflow-wrap: break-word; line-height: 1.5;"><strong>Level:</strong> ${(typeof initialCalc.povertyLevel === 'object' ? initialCalc.povertyLevel.level : initialCalc.povertyLevel) || 'Moderate'}</p>
+                                <p style="word-wrap: break-word; overflow-wrap: break-word; line-height: 1.5;"><strong>Confidence:</strong> ${initialCalc.confidenceScore || 50}%</p>
+                                <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid var(--border-color);">
+                                    <a href="/area-report.html" onclick="event.preventDefault(); if (typeof openFullReport === 'function') { openFullReport(${JSON.stringify(fallbackReportData).replace(/"/g, '&quot;')}); } else { sessionStorage.setItem('areaReportData', JSON.stringify(${JSON.stringify(fallbackReportData).replace(/"/g, '&quot;')})); window.location.href='/area-report.html'; } return false;" 
+                                       style="display: inline-block; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center; width: 100%; margin-top: 8px; box-sizing: border-box; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; line-height: 1.4;">
+                                        📄 View Full Detailed Report
+                                    </a>
+                                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 8px; text-align: center; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.4;">
+                                        Get comprehensive insights, charts, and downloadable PDF report
+                                    </p>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    // Check if poverty score is valid (only check for NaN, allow 0 as valid)
+                    if (isNaN(initialCalc.calculatedPovertyScore)) {
+                        console.warn('⚠️ Invalid poverty score (NaN), using fallback value');
+                        initialCalc.calculatedPovertyScore = 45;
+                    }
+                    
+                    dashboardSearchMarker.bindPopup(initialCalc.popupContent, { 
+                        maxWidth: window.innerWidth <= 768 ? Math.min(350, window.innerWidth - 40) : 350,
+                        className: 'custom-popup',
+                        autoPan: true,
+                        autoPanPadding: [50, 50],
+                        keepInView: true
+                    }).openPopup();
+                    
+                    console.log('✅ Popup bound and opened for searched location');
+
+                    // Store location data with marker (same as training data)
+                    // Store RAW data so we can recalculate when layers change
+                    dashboardSearchMarker.locationData = fullLocationData;
+                    dashboardSearchMarker.recalculatePopup = recalculateAndUpdatePopup;
+                    
+                    // Store update function globally so it can be called when layers change
+                    if (!window.searchedLocationUpdaters) {
+                        window.searchedLocationUpdaters = [];
+                    }
+                    
+                    const updatePopupOnLayerChange = () => {
+                        if (!dashboardSearchMarker || !dashboardSearchMarker.recalculatePopup) return;
+                        try {
+                            const recalc = dashboardSearchMarker.recalculatePopup();
+                            dashboardSearchMarker.setPopupContent(recalc.popupContent);
+                            if (dashboardSearchMarker.isPopupOpen && dashboardSearchMarker.isPopupOpen()) {
+                                dashboardSearchMarker.openPopup();
+                            }
+                        } catch (error) {
+                            console.warn('Error updating searched location popup:', error);
+                        }
+                    };
+                    
+                    window.searchedLocationUpdaters.push(updatePopupOnLayerChange);
+                    
+                    // Set up global layer change listener (only once)
+                    if (!window.searchedLocationLayerListenerAttached) {
+                        window.searchedLocationLayerListenerAttached = true;
+                        // Listen to both desktop and mobile checkboxes
+                        const layerIds = [
+                            'povertyLayer', 'educationLayer', 'healthLayer', 'waterLayer', 'shelterLayer',
+                            'povertyLayerMobile', 'educationLayerMobile', 'healthLayerMobile', 'waterLayerMobile', 'shelterLayerMobile'
+                        ];
+                        layerIds.forEach(layerId => {
+                            const checkbox = document.getElementById(layerId);
+                            if (checkbox) {
+                                checkbox.addEventListener('change', () => {
+                                    console.log(`🔄 Layer ${layerId} toggled - updating all searched location popups`);
+                                    // Update all searched location popups
+                                    if (window.searchedLocationUpdaters) {
+                                        window.searchedLocationUpdaters.forEach(updater => {
+                                            try {
+                                                updater();
+                                            } catch (error) {
+                                                console.warn('Error updating searched location:', error);
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                        
+                        // Also hook into updateMapLayers if it exists
+                        // Note: The updateMapLayers function in main.js already handles this, 
+                        // but we add a backup listener here for extra reliability
+                        setTimeout(() => {
+                            if (window.ipmasApp && typeof window.ipmasApp.updateMapLayers === 'function') {
+                                const originalUpdateMapLayers = window.ipmasApp.updateMapLayers.bind(window.ipmasApp);
+                                window.ipmasApp.updateMapLayers = function(...args) {
+                                    const result = originalUpdateMapLayers.apply(this, args);
+                                    // Update popups after layer update (backup trigger)
+                                    if (window.searchedLocationUpdaters && window.searchedLocationUpdaters.length > 0) {
+                                        setTimeout(() => {
+                                            window.searchedLocationUpdaters.forEach(updater => {
+                                                try {
+                                                    updater();
+                                                } catch (error) {
+                                                    console.warn('Error updating searched location popup after layer change:', error);
+                                                }
+                                            });
+                                        }, 150);
+                                    }
+                                    return result;
+                                };
+                            }
+                        }, 500);
+                    }
+
+                    console.log(`✅ Dashboard search: "${query}" → Found: ${locationData.display_name} at [${lat}, ${lng}]`);
+                    console.log(`✅ Location data prepared with calculation breakdown for training data UI`);
+                } else {
+                    console.warn('⚠️ Map not available yet');
+                }
+
+            } catch (error) {
+                console.error('Dashboard search error:', error);
+                alert(`Search failed: ${error.message || 'Unable to search. Please check your internet connection.'}`);
+            }
+        }
+
+        // Auto-complete suggestions for dashboard - uses backend proxy
+        async function performDashboardAutoComplete(query) {
+            const searchResults = document.getElementById('dashboardSearchResults');
+            if (!searchResults) return;
+            
+            if (query.length < 2) {
+                searchResults.style.display = 'none';
+                return;
+            }
+            
+            try {
+                // Use backend proxy to avoid CORS issues
+                let searchQuery = query.trim();
+                if (!searchQuery.toLowerCase().includes('kenya')) {
+                    searchQuery = `${searchQuery}, Kenya`;
+                }
+                
+                // Use backend geocoding proxy
+                const apiUrl = window.API_CONFIG 
+                    ? window.API_CONFIG.getApiUrl(`/api/v1/analytics/geocoding/search?q=${encodeURIComponent(searchQuery)}&limit=5`)
+                    : `/api/v1/analytics/geocoding/search?q=${encodeURIComponent(searchQuery)}&limit=5`;
+                
+                const response = await fetch(apiUrl);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const results = await response.json();
+                
+                // Filter for Kenya results if needed
+                const kenyaResults = results.filter(item => {
+                    const addr = item.address || {};
+                    return addr.country_code === 'ke' || addr.country === 'Kenya' || 
+                           (item.display_name && item.display_name.toLowerCase().includes('kenya'));
+                });
+                
+                dashboardSearchResultsList = kenyaResults.length > 0 ? kenyaResults : results;
+                
+                if (dashboardSearchResultsList.length > 0) {
+                    searchResults.innerHTML = '';
+
+                    const escapeHtml = (value) => {
+                        if (value === null || value === undefined) return '';
+                        return String(value)
+                            .replace(/&/g, '&amp;')
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;')
+                            .replace(/"/g, '&quot;')
+                            .replace(/'/g, '&#39;');
+                    };
+
+                    const formatCoordinates = (lat, lon) => {
+                        const parsedLat = parseFloat(lat);
+                        const parsedLon = parseFloat(lon);
+                        const safeLat = Number.isFinite(parsedLat) ? parsedLat.toFixed(4) : '0.0000';
+                        const safeLon = Number.isFinite(parsedLon) ? parsedLon.toFixed(4) : '0.0000';
+                        return `${safeLat}, ${safeLon}`;
+                    };
+
+                    const formatHierarchy = (result) => {
+                        if (!result || !result.address) return '';
+                        const address = result.address;
+                        const parts = [
+                            address.village || address.hamlet || address.suburb,
+                            address.town || address.city || address.municipality,
+                            address.county || address.state_district,
+                            address.state || address.region
+                        ]
+                            .filter(Boolean)
+                            .map(part => escapeHtml(part));
+
+                        return parts.length ? parts.join(' • ') : '';
+                    };
+
+                    results.slice(0, 8).forEach((result, index) => {
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'search-result';
+
+                        const displayName = escapeHtml(result.display_name || result.name || 'Unknown location');
+                        const type = escapeHtml(result.type || result.class || 'Location');
+                        const hierarchy = formatHierarchy(result);
+                        const coords = formatCoordinates(result.lat, result.lon);
+
+                        wrapper.innerHTML = `
+                            <div class="search-result-item" role="option" tabindex="0" data-index="${index}" data-result-index="${index}">
+                                <div class="search-result-content">
+                                    <div class="search-result-name">${displayName}</div>
+                                    <div class="search-result-details">
+                                        <span class="search-result-type">${type}</span>
+                                        ${hierarchy ? `<span class="search-result-hierarchy">${hierarchy}</span>` : ''}
+                                    </div>
+                                </div>
+                                <div class="search-result-meta">
+                                    <div class="search-result-coords">${coords}</div>
+                                    <div class="search-result-icon" aria-hidden="true">↗</div>
+                                </div>
+                            </div>
+                        `;
+
+                        const row = wrapper.querySelector('.search-result-item');
+                        row.addEventListener('click', () => selectDashboardResult(index));
+                        row.addEventListener('keydown', (event) => {
+                            if (event.key === 'Enter' || event.key === ' ') {
+                                event.preventDefault();
+                                selectDashboardResult(index);
+                            }
+                        });
+
+                        searchResults.appendChild(wrapper);
+                    });
+
+                    searchResults.style.display = 'block';
+                } else {
+                    searchResults.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Dashboard autocomplete error:', error);
+                searchResults.style.display = 'none';
+                // Silently fail - don't show error to user for autocomplete
+            }
+        }
+
+        // Select a result from autocomplete
+        function selectDashboardResult(index) {
+            const result = dashboardSearchResultsList[index];
+            document.getElementById('dashboardLocationSearchInput').value = result.name || result.display_name;
+            const resultsEl = document.getElementById('dashboardSearchResults');
+            if (resultsEl) {
+                resultsEl.style.display = 'none';
+                resultsEl.classList.remove('show');
+            }
+            performDashboardLocationSearch();
+        }
+
+        // Get ML prediction for searched location
+        async function getMLPredictionForSearchLocation(locationId, lat, lng, county, area) {
+            console.log('🤖 Getting ML prediction for searched location:', { lat, lng, county, area });
+            
+            try {
+                // Prepare location data for ML prediction
+                const locationData = {
+                    lat: lat,
+                    lng: lng,
+                    id: locationId,
+                    county: county || 'Unknown',
+                    sub_county: area || '',
+                    ward: '',
+                    name: dashboardSearchMarker?.locationData?.name || 'Location',
+                    poverty_index: null, // No known value for searched locations
+                    education_access: null,
+                    health_vulnerability: null,
+                    water_access: null,
+                    employment_rate: null,
+                    housing_quality: null
+                };
+
+                // Call ML prediction API
+                const response = await fetch('http://localhost:3001/api/v1/analytics/ml-predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        householdData: {
+                            hv271: 50000, // Default wealth index for searched locations
+                            hv009: 5,     // Sample household size
+                            hv012: 2,     // Sample women count
+                            hv013: 2      // Sample men count
+                        },
+                        locationData: {
+                            lat: lat,
+                            lng: lng,
+                            county: county || 'Unknown'
+                        }
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success && result.prediction) {
+                    // Validate prediction (even without actual values, we can still show prediction)
+                    const validation = {
+                        predicted_value: result.prediction.poverty_index,
+                        actual_value: null,
+                        difference: null,
+                        percentage_error: null,
+                        accuracy_status: 'unknown',
+                        indicator_comparisons: {}
+                    };
+
+                    // Add to ML prediction layer if poverty-map system is available
+                    if (window.povertyMapSystem && typeof window.povertyMapSystem.addPredictionToLayer === 'function') {
+                        window.povertyMapSystem.addPredictionToLayer(result.prediction, locationData, validation);
+                    }
+
+                    // Display in popup
+                    const predictionDiv = document.getElementById(`ml-result-${locationId}`);
+                    if (predictionDiv) {
+                        predictionDiv.innerHTML = `
+                            <div style="background: #e8f5e9; padding: 10px; border-radius: 5px; border-left: 4px solid #4caf50;">
+                                <strong>🤖 ML Prediction:</strong>
+                                <p style="margin: 5px 0 0 0; font-size: 1.1rem; font-weight: bold; color: var(--primary-color);">
+                                    ${result.prediction.poverty_index.toFixed(1)}% poverty
+                                </p>
+                                <p style="margin: 3px 0 0 0; font-size: 0.85rem; color: #666;">
+                                    Confidence: ${(result.prediction.confidence * 100).toFixed(0)}% | Model: ${result.prediction.model}
+                                </p>
+                                <p style="margin: 5px 0 0 0; font-size: 0.8rem; color: #999;">
+                                    ⚠️ No known value for comparison (searched location)
+                                </p>
+                                <p style="margin: 8px 0 0 0; font-size: 0.8rem; color: #4caf50; font-weight: 500;">
+                                    ✅ Saved to database | ✅ Added to ML Prediction Layer
+                                </p>
+                            </div>
+                        `;
+                    }
+                    console.log('✅ ML Prediction for searched location:', result.prediction.poverty_index);
+                } else {
+                    throw new Error('Invalid prediction result');
+                }
+            } catch (error) {
+                console.error('ML prediction error for searched location:', error);
+                const predictionDiv = document.getElementById(`ml-result-${locationId}`);
+                if (predictionDiv) {
+                    predictionDiv.innerHTML = `
+                        <div style="background: #ffebee; padding: 10px; border-radius: 5px; border-left: 4px solid #f44336;">
+                            <strong>⚠️ Prediction Error</strong>
+                            <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #666;">
+                                Could not get ML prediction. ${error.message || 'Please try again.'}
+                            </p>
+                        </div>
+                    `;
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* Map Section - Compact spacing */
+        .map-section {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* TopBar Component - Fixed Container Above Map */
+        .top-bar {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px;
+            background: var(--panel-bg);
+            border-bottom: 1px solid var(--panel-border);
+            box-shadow: var(--panel-shadow);
+            z-index: 1000;
+            position: relative;
+            width: 100%;
+            box-sizing: border-box;
+            margin: 0;
+        }
+
+        /* Search Bar Section (Left Side) */
+        .top-bar-search {
+            flex: 1;
+            min-width: 0;
+            max-width: 600px;
+            position: relative;
+        }
+
+        /* Controls Container (Right Side) - Fixed width to prevent layout shift */
+        .top-bar-controls {
+            position: relative;
+            flex-shrink: 0;
+            width: 280px;
+            height: auto;
+            min-height: 48px;
+        }
+
+        .search-bar-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+            color: var(--legend-muted-color);
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .location-search-input {
+            width: 100%;
+            padding: 12px 16px 12px 45px;
+            font-size: 14px;
+            border: 2px solid var(--control-border);
+            border-radius: 8px;
+            background: var(--control-bg);
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+            color: var(--control-text);
+        }
+
+        .location-search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: var(--bg-primary);
+            box-shadow: 0 0 0 3px rgba(46, 139, 87, 0.18);
+        }
+
+        .search-results {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            margin-top: 8px;
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            box-shadow: var(--panel-shadow);
+            z-index: 1001;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .search-results.show {
+            display: block;
+        }
+
+        /* Search result items */
+        .search-result-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--panel-section-divider);
+            transition: background 0.2s;
+            color: var(--control-text);
+        }
+
+        .search-result-item:hover {
+            background: var(--control-bg-hover);
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Floating search bar styling (legacy - kept for compatibility) */
+        .floating-search-bar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            min-width: 300px;
+            max-width: 400px;
+        }
+        
+        /* Search input focus styling */
+        .location-search-input:focus {
+            border-color: var(--primary-color) !important;
+            background: var(--bg-primary) !important;
+            box-shadow: 0 0 0 3px rgba(46, 139, 87, 0.18) !important;
+        }
+        
+        .location-search-input::placeholder {
+            color: var(--legend-muted-color);
+        }
+
+        /* Search marker styles */
+        .search-marker-icon {
+            background: transparent !important;
+            border: none !important;
+        }
+
+        .search-marker-popup .leaflet-popup-content-wrapper {
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            background: var(--panel-bg);
+            color: var(--control-text);
+            border: 1px solid var(--panel-border);
+        }
+
+        .search-marker-popup .leaflet-popup-tip {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+        }
+
+        /* Poverty Popup Styles */
+        .poverty-popup {
+            padding: var(--spacing-md);
+            max-width: 100%;
+            box-sizing: border-box;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        .poverty-popup h3 {
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0 0 var(--spacing-sm) 0;
+            line-height: 1.4;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+        }
+        
+        .poverty-popup p {
+            margin: var(--spacing-xs) 0;
+            line-height: 1.6;
+            font-size: var(--font-size-base);
+            color: var(--text-primary);
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        .poverty-popup strong {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .poverty-popup button {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
+        }
+        
+        .poverty-popup a {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
+        }
+        
+        /* Leaflet Popup Styles */
+        .leaflet-popup-content-wrapper {
+            border-radius: 12px;
+            box-shadow: var(--panel-shadow);
+            background: var(--panel-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--panel-border);
+            max-width: 100% !important;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        .leaflet-popup-content {
+            margin: var(--spacing-md);
+            line-height: 1.6;
+            font-size: var(--font-size-base);
+            max-width: 100%;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            box-sizing: border-box;
+        }
+        
+        .leaflet-popup-content * {
+            max-width: 100%;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        .custom-popup .leaflet-popup-content-wrapper {
+            max-width: 100% !important;
+            width: auto !important;
+        }
+        
+        .custom-popup .leaflet-popup-content {
+            width: auto !important;
+            max-width: 100% !important;
+        }
+        
+        /* Map Container - No spacing above */
+        .map-container {
+            height: 500px;
+            width: 100%;
+            position: relative;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Map Control Panel Styles - Absolute positioned to prevent layout shift */
+        .map-control-panel {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 280px;
+            background: var(--panel-bg);
+            box-shadow: var(--panel-shadow);
+            z-index: 1001;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            height: auto;
+            max-height: 500px;
+            border-radius: 8px;
+            border: 1px solid var(--panel-border);
+        }
+
+        /* When collapsed, show as compact header button - no layout shift */
+        .map-control-panel.collapsed {
+            width: auto;
+            min-width: 200px;
+            height: auto;
+            max-height: auto;
+            /* Position remains absolute, no layout shift */
+        }
+
+        .control-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--panel-header-bg);
+            color: var(--panel-header-text);
+            border-bottom: 1px solid var(--panel-section-divider);
+            flex-shrink: 0;
+        }
+
+        .control-panel-header h5 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .control-panel-toggle {
+            background: var(--panel-header-button-bg);
+            border: none;
+            color: var(--panel-header-text);
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .control-panel-toggle:hover {
+            background: var(--panel-header-button-hover);
+        }
+
+        .control-panel-content {
+            display: block;
+            padding: 8px;
+            overflow-y: auto;
+            flex: 1;
+            transition: all 0.3s ease;
+        }
+
+        .control-panel-content.collapsed {
+            display: none !important;
+            max-height: 0 !important;
+            overflow: hidden;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        /* When collapsed, shrink the entire panel to just the header */
+        .map-control-panel.collapsed .control-panel-content {
+            display: none !important;
+            max-height: 0 !important;
+            height: 0 !important;
+            overflow: hidden;
+            padding: 0 !important;
+            margin: 0 !important;
+            opacity: 0;
+        }
+
+        /* Ensure header is the only visible part when collapsed */
+        .map-control-panel.collapsed .control-panel-header {
+            border-bottom: none;
+            border-radius: 8px;
+        }
+
+        .control-section {
+            margin-bottom: 12px;
+            padding-top: 8px;
+            border-top: 1px solid var(--panel-section-divider);
+        }
+
+        .control-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-section:first-child {
+            border-top: none;
+            padding-top: 0;
+        }
+
+        .control-section-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--legend-muted-color);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 8px 12px 4px;
+            margin-bottom: 4px;
+        }
+
+        .control-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .control-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--control-bg);
+            border: 1px solid var(--control-border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 13px;
+            color: var(--control-text);
+            text-align: left;
+        }
+
+        .control-btn:hover {
+            background: var(--control-bg-hover);
+            border-color: var(--primary-color);
+            transform: translateX(-2px);
+            box-shadow: 0 2px 8px rgba(46, 139, 87, 0.2);
+        }
+
+        .control-btn:active {
+            transform: translateX(0);
+            box-shadow: 0 1px 4px rgba(46, 139, 87, 0.2);
+        }
+
+        .control-icon {
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .control-label {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .toggle-icon {
+            transition: transform 0.3s ease;
+            font-size: 12px;
+            display: inline-block;
+        }
+
+        .map-control-panel.collapsed .toggle-icon {
+            transform: rotate(-180deg);
+        }
+
+        /* Legend Panel Styles */
+        .legend-panel {
+            padding: 12px;
+            background: var(--panel-bg);
+            border-radius: 8px;
+            border: 1px solid var(--panel-border);
+        }
+
+        .legend-items-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .legend-item-panel {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            color: var(--legend-muted-color);
+        }
+
+        .legend-panel-title {
+            margin: 0 0 12px 0;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--legend-heading-color);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .legend-summary-panel {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--panel-section-divider);
+        }
+
+        .legend-summary-heading {
+            margin: 0 0 10px 0;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--legend-muted-color);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .legend-summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            margin-bottom: 6px;
+            color: var(--legend-muted-color);
+        }
+
+        .legend-summary-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .legend-summary-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-summary-value {
+            font-weight: bold;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            flex-shrink: 0;
+            border: 1px solid var(--control-border);
+        }
+
+        .legend-color-small {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+        }
+
+        .legend-color.critical {
+            background: #d73027;
+        }
+
+        .legend-color.high {
+            background: #fc8d59;
+        }
+
+        .legend-color.moderate {
+            background: #fee08b;
+        }
+
+        .legend-color.low {
+            background: #91cf60;
+        }
+
+        .legend-summary-label span {
+            color: var(--legend-muted-color);
+        }
+
+        .legend-summary-value.critical-value {
+            color: #d73027;
+        }
+
+        .legend-summary-value.high-value {
+            color: #fc8d59;
+        }
+
+        .legend-summary-value.moderate-value {
+            color: #fee08b;
+        }
+
+        .legend-summary-value.low-value {
+            color: #91cf60;
+        }
+
+        .severity-summary-panel {
+            background: var(--control-bg);
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid var(--panel-border);
+        }
+
+        /* Hide default Leaflet controls */
+        .leaflet-control-zoom {
+            display: none !important;
+        }
+
+        /* Dashboard Overview - Compact spacing */
+        .dashboard-overview {
+            margin-top: 20px;
+            padding: 0;
+        }
+
+        /* Responsive: Tablet adjustments */
+        @media screen and (max-width: 1024px) {
+            .top-bar {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .top-bar-search {
+                max-width: 100%;
+            }
+
+            .top-bar-controls {
+                width: 100%;
+            }
+
+            .map-control-panel {
+                position: relative;
+                width: 100%;
+                max-width: 100%;
+            }
+        }
+
+        /* Responsive: Mobile adjustments */
+        @media screen and (max-width: 768px) {
+            .top-bar {
+                padding: 10px;
+                gap: 10px;
+            }
+
+            .location-search-input {
+                padding: 10px 14px 10px 40px;
+                font-size: 13px;
+            }
+
+            .top-bar-controls {
+                width: 100%;
+            }
+
+            .map-control-panel {
+                position: relative;
+                width: 100%;
+            }
+
+            .map-control-panel.collapsed {
+                min-width: 100%;
+            }
+
+            .control-panel-header {
+                padding: 10px 12px;
+            }
+
+            .control-panel-header h5 {
+                font-size: 13px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .top-bar {
+                padding: 8px;
+                gap: 8px;
+            }
+
+            .top-bar-controls {
+                width: 100%;
+            }
+
+            .control-panel-header {
+                padding: 8px 10px;
+            }
+
+            .control-panel-header h5 {
+                font-size: 12px;
+            }
+
+            .control-btn {
+                padding: 8px 10px;
+                font-size: 12px;
+            }
+
+            .control-label {
+                font-size: 12px;
+            }
+
+            .control-icon {
+                font-size: 16px;
+            }
+
+            .dashboard-overview {
+                margin-top: 16px;
+            }
+        }
+        
+        /* Responsive design for mobile */
+        @media screen and (max-width: 768px) {
+            .floating-search-bar {
+                min-width: 250px;
+                max-width: calc(100% - 40px);
+                right: 20px;
+                top: 10px;
+            }
+            
+            .location-search-input {
+                font-size: 0.85rem !important;
+                padding: 10px 14px !important;
+                padding-left: 40px !important;
+            }
+        }
+        
+        @media screen and (max-width: 480px) {
+            .floating-search-bar {
+                min-width: calc(100% - 20px);
+                right: 10px;
+                top: 5px;
+            }
+        }
+        
+        /* Mobile Responsive Styles for Popups */
+        @media screen and (max-width: 768px) {
+            /* Leaflet Popup Mobile Styles */
+            .leaflet-popup {
+                max-width: calc(100vw - 40px) !important;
+                width: calc(100vw - 40px) !important;
+            }
+            
+            .leaflet-popup-content-wrapper {
+                max-width: calc(100vw - 40px) !important;
+                width: calc(100vw - 40px) !important;
+                font-size: 14px !important;
+            }
+            
+            .leaflet-popup-content {
+                margin: 12px !important;
+                max-width: 100% !important;
+                width: 100% !important;
+                font-size: 14px !important;
+                line-height: 1.5 !important;
+                word-wrap: break-word !important;
+                overflow-wrap: break-word !important;
+            }
+            
+            .custom-popup {
+                max-width: calc(100vw - 40px) !important;
+                width: calc(100vw - 40px) !important;
+            }
+            
+            .custom-popup .leaflet-popup-content-wrapper {
+                max-width: calc(100vw - 40px) !important;
+                width: calc(100vw - 40px) !important;
+            }
+            
+            .custom-popup .leaflet-popup-content {
+                max-width: 100% !important;
+                width: 100% !important;
+            }
+            
+            /* Poverty Popup Mobile Styles */
+            .poverty-popup {
+                padding: 12px !important;
+                font-size: 14px !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            
+            .poverty-popup h3 {
+                font-size: 16px !important;
+                line-height: 1.3 !important;
+                margin-bottom: 8px !important;
+                word-wrap: break-word !important;
+                overflow-wrap: break-word !important;
+                hyphens: auto !important;
+            }
+            
+            .poverty-popup p {
+                font-size: 13px !important;
+                line-height: 1.5 !important;
+                margin: 6px 0 !important;
+                word-wrap: break-word !important;
+                overflow-wrap: break-word !important;
+            }
+            
+            .poverty-popup button {
+                padding: 8px 12px !important;
+                font-size: 13px !important;
+                width: 100% !important;
+                white-space: normal !important;
+                word-wrap: break-word !important;
+                overflow-wrap: break-word !important;
+                line-height: 1.4 !important;
+            }
+            
+            .poverty-popup a {
+                padding: 10px 16px !important;
+                font-size: 13px !important;
+                white-space: normal !important;
+                word-wrap: break-word !important;
+                overflow-wrap: break-word !important;
+                line-height: 1.4 !important;
+            }
+            
+            /* Breakdown Modal Mobile Styles */
+            .breakdown-modal-content {
+                max-width: calc(100vw - 20px) !important;
+                width: calc(100vw - 20px) !important;
+                max-height: 90vh !important;
+                margin: 10px !important;
+            }
+            
+            .breakdown-modal-header {
+                padding: 12px !important;
+                flex-wrap: wrap !important;
+            }
+            
+            .breakdown-modal-header h3 {
+                font-size: 16px !important;
+                word-wrap: break-word !important;
+                overflow-wrap: break-word !important;
+                line-height: 1.3 !important;
+                width: 100% !important;
+            }
+            
+            #breakdownContent {
+                padding: 12px !important;
+                font-size: 14px !important;
+                word-wrap: break-word !important;
+                overflow-wrap: break-word !important;
+            }
+            
+            .breakdown-section h4 {
+                font-size: 15px !important;
+                word-wrap: break-word !important;
+                overflow-wrap: break-word !important;
+            }
+            
+            .breakdown-overview-grid {
+                grid-template-columns: 1fr !important;
+                gap: 12px !important;
+            }
+            
+            .breakdown-table {
+                font-size: 12px !important;
+                display: block !important;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+            }
+            
+            .breakdown-table th,
+            .breakdown-table td {
+                padding: 6px 8px !important;
+                font-size: 12px !important;
+                word-wrap: break-word !important;
+                overflow-wrap: break-word !important;
+                min-width: 70px !important;
+            }
+        }
+        
+        /* Calculation Breakdown Modal Styles (same as training data clusters) */
+        #breakdownModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        #breakdownModal.show {
+            display: flex;
+        }
+        
+        .breakdown-modal-content {
+            background: var(--panel-bg);
+            border-radius: 12px;
+            max-width: 700px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: var(--panel-shadow);
+            position: relative;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        .breakdown-modal-header {
+            padding: 20px;
+            border-bottom: 2px solid var(--panel-section-divider);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .breakdown-modal-header h3 {
+            margin: 0;
+            color: var(--primary-color);
+        }
+        
+        .breakdown-modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .breakdown-modal-close:hover {
+            color: #333;
+        }
+        
+        #breakdownContent {
+            padding: 20px;
+        }
+        
+        .breakdown-section {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .breakdown-section h4 {
+            margin: 0 0 12px 0;
+            color: var(--primary-color);
+        }
+
+        .breakdown-overview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .breakdown-overview-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-section-divider);
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 6px 18px rgba(15, 34, 54, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .breakdown-overview-card::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(135deg, rgba(32, 201, 151, 0.12), rgba(31, 111, 235, 0.15));
+            opacity: 0.6;
+        }
+
+        .breakdown-overview-card > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .breakdown-overview-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .breakdown-overview-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            line-height: 1.1;
+        }
+
+        .breakdown-overview-subtext {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 6px;
+        }
+
+        .layer-contribution-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .layer-contribution-card {
+            background: rgba(248, 249, 250, 0.9);
+            border: 1px solid rgba(16, 33, 43, 0.08);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .layer-card-header {
+            display: flex;
+            justify-content: space-between;
+                align-items: center;
+        }
+
+        .layer-card-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .layer-card-weight {
+            font-size: 0.85rem;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: rgba(31, 111, 235, 0.12);
+            color: rgba(31, 111, 235, 0.95);
+            font-weight: 600;
+        }
+
+        .layer-card-metrics {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .layer-card-metrics .metric {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 110px;
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .layer-progress {
+            width: 100%;
+            height: 10px;
+            background: rgba(16, 33, 43, 0.08);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .layer-progress-bar {
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, rgba(32, 201, 151, 0.85), rgba(31, 111, 235, 0.85));
+        }
+
+        .layer-status {
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            width: fit-content;
+        }
+
+        .layer-status.active {
+            background: rgba(40, 167, 69, 0.12);
+            color: #208f47;
+        }
+
+        .layer-status.inactive {
+            background: rgba(220, 53, 69, 0.12);
+            color: #c53030;
+        }
+        
+        .breakdown-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        
+        .breakdown-table th,
+        .breakdown-table td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        
+        .breakdown-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        .breakdown-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .status-active {
+            color: #28a745;
+            font-weight: 600;
+        }
+        
+        .status-inactive {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        
+        body.theme-dark .breakdown-modal-content {
+            background: rgba(16, 21, 27, 0.98);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        body.theme-dark .breakdown-overview-card {
+            background: rgba(16, 24, 32, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+        }
+
+        body.theme-dark .breakdown-overview-card::after {
+            opacity: 0.35;
+        }
+
+        body.theme-dark .breakdown-overview-value {
+            color: rgba(245, 250, 255, 0.95);
+        }
+
+        body.theme-dark .layer-contribution-card {
+            background: rgba(25, 32, 40, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        body.theme-dark .layer-card-weight {
+            background: rgba(31, 111, 235, 0.2);
+            color: rgba(171, 198, 255, 0.95);
+        }
+
+        body.theme-dark .layer-progress {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        body.theme-dark .metric-label {
+            color: rgba(220, 230, 255, 0.65);
+        }
+
+        body.theme-dark .metric-value {
+            color: rgba(235, 244, 255, 0.95);
+        }
+
+        body.theme-dark .layer-status.active {
+            background: rgba(76, 208, 132, 0.18);
+            color: rgba(152, 245, 197, 0.95);
+        }
+
+        body.theme-dark .layer-status.inactive {
+            background: rgba(220, 53, 69, 0.25);
+            color: rgba(255, 167, 178, 0.95);
+        }
+
+        .final-score {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .final-score-label {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+        
+        .final-score-value {
+            font-size: 3rem;
+            font-weight: bold;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+    
+    <!-- Calculation Breakdown Modal (same as training data clusters) -->
+    <div id="breakdownModal" onclick="if(event.target.id === 'breakdownModal') closeCalculationBreakdown()">
+        <div class="breakdown-modal-content" onclick="event.stopPropagation()">
+            <div class="breakdown-modal-header">
+                <h3>Poverty Calculation Breakdown</h3>
+                <button class="breakdown-modal-close" onclick="closeCalculationBreakdown()">×</button>
+            </div>
+            <div id="breakdownContent"></div>
+            <div style="padding: 20px; border-top: 2px solid #eee; display: flex; gap: 10px; justify-content: flex-end;">
+                <button onclick="closeCalculationBreakdown()" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Make formatIndicatorName available globally (same as training data)
+        function formatIndicatorName(indicator) {
+            return indicator.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        }
+        
+        // Make showLocationBreakdown available globally (from poverty-map.js)
+        function showLocationBreakdown(locationData) {
+            const modal = document.getElementById('breakdownModal');
+            const contentDiv = document.getElementById('breakdownContent');
+            
+            if (!modal || !contentDiv) {
+                console.error('Breakdown modal not found');
+                return;
+            }
+            
+            // Get breakdown for this specific location
+            const breakdownHTML = generateLocationBreakdownHTML(locationData);
+            contentDiv.innerHTML = breakdownHTML;
+            
+            // Show modal
+            modal.style.display = 'flex';
+            modal.classList.add('show');
+        }
+        
+        function generateLocationBreakdownHTML(location) {
+            // Always create a fresh calculator and update active layers from current checkboxes
+            // This ensures the breakdown respects current layer toggles
+            let calculator;
+            
+            if (window.povertyMapSystem && window.povertyMapSystem.dynamicCalculator) {
+                calculator = window.povertyMapSystem.dynamicCalculator;
+            } else if (typeof DynamicPovertyCalculator !== 'undefined') {
+                calculator = new DynamicPovertyCalculator();
+                if (!window.povertyMapSystem) window.povertyMapSystem = {};
+                window.povertyMapSystem.dynamicCalculator = calculator;
+            } else {
+                return '<p>No calculation data available. Please ensure DynamicPovertyCalculator is loaded.</p>';
+            }
+            
+            // CRITICAL: Update active layers from current checkbox states
+            // This ensures the breakdown shows only active layers
+            calculator.updateActiveLayers();
+            
+            const calculation = calculator.calculateLocationPovertyIndex(location);
+            const breakdown = calculation.breakdown;
+            
+            // Format location with hierarchical structure
+            const formatLocationName = (loc) => {
+                const parts = [];
+                if (loc.village) parts.push(loc.village);
+                if (loc.ward) parts.push(loc.ward);
+                if (loc.sub_county || loc.subcounty) parts.push(loc.sub_county || loc.subcounty);
+                if (loc.county) parts.push(loc.county);
+                return parts.length > 0 ? parts.join(', ') : loc.name || loc.location_name || 'Unknown Location';
+            };
+            
+            const formattedBreakdownLocation = formatLocationName(location);
+            
+            // Build administrative hierarchy in proper order (County → Sub-County → Ward → Village/Location)
+            // Only include non-empty values and skip "Unknown"
+            const adminHierarchy = [];
+            
+            // County (highest level) - Required field
+            const county = location.county || location.state || '';
+            if (county && county !== 'Unknown' && county.trim() !== '' && !county.toLowerCase().includes('nairobi city')) {
+                // Clean up county name (remove "County" suffix if present)
+                const cleanCounty = county.replace(/county/gi, '').trim();
+                adminHierarchy.push(`<strong>County:</strong> ${cleanCounty}`);
+            } else if (county && county.toLowerCase().includes('nairobi')) {
+                adminHierarchy.push(`<strong>County:</strong> Nairobi`);
+            }
+            
+            // Sub-County (second level)
+            const subCounty = location.sub_county || location.subcounty || location.district || location.city;
+            if (subCounty && subCounty.trim() !== '' && subCounty !== county) {
+                adminHierarchy.push(`<strong>Sub-County:</strong> ${subCounty}`);
+            }
+            
+            // Constituency (if different from Sub-County)
+            const constituency = location.constituency;
+            if (constituency && constituency.trim() !== '' && constituency !== subCounty) {
+                adminHierarchy.push(`<strong>Constituency:</strong> ${constituency}`);
+            }
+            
+            // Ward (third level)
+            const ward = location.ward;
+            if (ward && ward.trim() !== '') {
+                adminHierarchy.push(`<strong>Ward:</strong> ${ward}`);
+            }
+            
+            // Village/Location (lowest level) - only show if not empty and different from ward
+            const village = location.village || location.neighbourhood;
+            if (village && village.trim() !== '' && village !== ward && village !== subCounty) {
+                adminHierarchy.push(`<strong>Location:</strong> ${village}`);
+            }
+            
+            // Country (always show)
+            adminHierarchy.push(`<strong>Country:</strong> Kenya`);
+            
+            const breakdownEntries = Object.entries(breakdown || {}).filter(([, data]) => data && typeof data === 'object');
+            const activeEntries = breakdownEntries.filter(([, data]) => data.is_active);
+            const parseNumber = (value, fallback = 0) => {
+                if (typeof value === 'number' && !isNaN(value)) return value;
+                if (typeof value === 'string') {
+                    const cleaned = value.replace('%', '').trim();
+                    const parsed = parseFloat(cleaned);
+                    return isNaN(parsed) ? fallback : parsed;
+                }
+                return fallback;
+            };
+            
+            const totalWeight = activeEntries.reduce((sum, [, data]) => sum + parseNumber(data.weight_percentage), 0);
+            const averageLayerScore = activeEntries.length
+                ? activeEntries.reduce((sum, [, data]) => {
+                    const adjusted = parseNumber(data.adjusted_value, parseNumber(data.original_value));
+                    return sum + adjusted;
+                }, 0) / activeEntries.length
+                : 0;
+            
+            const topContributorEntry = activeEntries.reduce((top, current) => {
+                const currentContribution = parseNumber(current[1].contribution);
+                if (!top) return current;
+                const topContribution = parseNumber(top[1].contribution);
+                return currentContribution > topContribution ? current : top;
+            }, null);
+            
+            const topContributorName = topContributorEntry ? formatIndicatorName(topContributorEntry[0]) : '—';
+            const topContributorValue = topContributorEntry ? parseNumber(topContributorEntry[1].contribution).toFixed(2) : '0.00';
+            
+            let html = `
+                <div class="breakdown-section">
+                    <h4>Location Information</h4>
+                    <div class="layer-contribution-card" style="gap: 8px;">
+                        <div class="layer-card-header">
+                            <span class="layer-card-title">${formattedBreakdownLocation}</span>
+                            <span class="layer-card-weight">${location.country || 'Kenya'}</span>
+                        </div>
+                        <div class="layer-card-metrics">
+                            <div class="metric">
+                                <span class="metric-label">Primary Name</span>
+                                <span class="metric-value">${location.name || location.location_name || 'N/A'}</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Calculated Score</span>
+                                <span class="metric-value">${calculation.poverty_index.toFixed(1)}%</span>
+                            </div>
+                        </div>
+                        ${adminHierarchy.length > 0 ? `
+                            <div style="width: 100%; border-top: 1px solid var(--panel-section-divider); padding-top: 8px; display: flex; flex-direction: column; gap: 4px;">
+                                ${adminHierarchy.map(item => `<div style="font-size: 0.85rem; color: var(--text-secondary);">${item}</div>`).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+                
+                <div class="breakdown-section">
+                    <h4>Summary</h4>
+                    <div class="breakdown-overview-grid">
+                        <div class="breakdown-overview-card">
+                            <div class="breakdown-overview-label">Poverty Index</div>
+                            <div class="breakdown-overview-value">${calculation.poverty_index.toFixed(1)}%</div>
+                            <div class="breakdown-overview-subtext">Dynamic weighting result</div>
+                        </div>
+                        <div class="breakdown-overview-card">
+                            <div class="breakdown-overview-label">Active Layers</div>
+                            <div class="breakdown-overview-value">${calculation.active_layers.length}</div>
+                            <div class="breakdown-overview-subtext">Total configured in this calculation</div>
+                        </div>
+                        <div class="breakdown-overview-card">
+                            <div class="breakdown-overview-label">Avg. Layer Score</div>
+                            <div class="breakdown-overview-value">${averageLayerScore.toFixed(1)}%</div>
+                            <div class="breakdown-overview-subtext">Across active layers only</div>
+                        </div>
+                        <div class="breakdown-overview-card">
+                            <div class="breakdown-overview-label">Top Contributor</div>
+                            <div class="breakdown-overview-value" style="font-size: 1.4rem;">${topContributorName}</div>
+                            <div class="breakdown-overview-subtext">Impact score ${topContributorValue}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="breakdown-section">
+                    <h4>How the Score Was Calculated</h4>
+                    <div class="layer-contribution-card" style="background: rgba(31, 111, 235, 0.08); border: 1px solid rgba(31, 111, 235, 0.2);">
+                        <div style="font-weight: 600; color: var(--text-primary);">Poverty Score = Σ (Layer Score × Weight) ÷ Σ Weights</div>
+                        <div style="font-family: 'Courier New', monospace; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
+                            Score = (L₁×W₁ + L₂×W₂ + ... + Lₙ×Wₙ) ÷ ΣW<br>
+                            ΣW = ${totalWeight.toFixed(1)}%
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="breakdown-section">
+                    <h4>Layer Contributions</h4>
+                    <div class="layer-contribution-grid">
+            `;
+            
+            // Add each layer's contribution
+            Object.entries(breakdown).forEach(([indicator, data]) => {
+                // Skip if data is null/undefined or not an object
+                if (!data || typeof data !== 'object') {
+                    console.warn(`⚠️ Invalid breakdown data for ${indicator}:`, data);
+                    return;
+                }
+                
+                const layerName = formatIndicatorName(indicator);
+                const status = data.is_active ? 'Active' : 'Inactive';
+                const statusClass = data.is_active ? 'status-active' : 'status-inactive';
+                
+                // Safely convert values to numbers before using toFixed
+                // Handle both adjusted_value and original_value
+                const adjustedValue = typeof data.adjusted_value === 'number' 
+                    ? data.adjusted_value 
+                    : (typeof data.original_value === 'number' ? data.original_value : parseFloat(data.adjusted_value || data.original_value || 0) || 0);
+                
+                const contribution = typeof data.contribution === 'number' 
+                    ? data.contribution 
+                    : parseFloat(data.contribution || 0) || 0;
+                
+                const weightPercent = data.weight_percentage || '0%';
+                
+                const weightLabel = typeof weightPercent === 'number'
+                    ? `${(weightPercent * 100).toFixed(0)}%`
+                    : weightPercent;
+                const scoreValue = Math.max(0, Math.min(100, adjustedValue));
+                const progressWidth = isFinite(scoreValue) ? scoreValue : 0;
+                
+                html += `
+                    <div class="layer-contribution-card ${data.is_active ? 'layer-active' : 'layer-inactive'}">
+                        <div class="layer-card-header">
+                            <span class="layer-card-title">${layerName}</span>
+                            <span class="layer-card-weight">Weight: ${weightLabel}</span>
+                        </div>
+                        <div class="layer-card-metrics">
+                            <div class="metric">
+                                <span class="metric-label">Layer Score</span>
+                                <span class="metric-value">${adjustedValue.toFixed(1)}%</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Contribution</span>
+                                <span class="metric-value">${contribution.toFixed(2)}</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Status</span>
+                                <span class="metric-value">${status}</span>
+                            </div>
+                        </div>
+                        <div class="layer-progress">
+                            <div class="layer-progress-bar" style="width: ${progressWidth}%;"></div>
+                        </div>
+                        <div class="layer-status ${data.is_active ? 'active' : 'inactive'}">
+                            ${data.is_active ? 'Active Layer' : 'Inactive Layer'}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                </div>
+                
+                <div class="final-score">
+                    <div class="final-score-label">Final Calculated Score</div>
+                    <div class="final-score-value">${calculation.poverty_index.toFixed(1)}%</div>
+                    <div style="font-size: 0.9rem; opacity: 0.8; margin-top: 8px;">
+                        Based on ${calculation.active_layers.length} active layers
+                    </div>
+                </div>
+                
+                <div class="breakdown-section" style="margin-top: 20px; padding-top: 20px; border-top: 2px solid var(--border-color);">
+                    <a href="/area-report.html" onclick="event.preventDefault(); openFullReport(${JSON.stringify(location).replace(/"/g, '&quot;')}); return false;" 
+                       style="display: inline-block; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center; width: 100%; margin-top: 15px;">
+                        📄 View Full Detailed Report
+                    </a>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 8px; text-align: center;">
+                        Get comprehensive insights, charts, and downloadable PDF report
+                    </p>
+                </div>
+            `;
+            
+            return html;
+        }
+        
+        function closeCalculationBreakdown() {
+            const modal = document.getElementById('breakdownModal');
+            if (modal) {
+                modal.style.animation = 'fadeOut 0.3s ease-in-out';
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                    modal.classList.remove('show');
+                    modal.style.animation = 'fadeIn 0.3s ease-in-out';
+                }, 300);
+            }
+        }
+        
+        function openFullReport(locationData) {
+            sessionStorage.setItem('areaReportData', JSON.stringify(locationData));
+            window.location.href = '/area-report.html';
+        }
+        
+        function downloadCalculationBreakdown() {
+            // Get current location data from modal
+            const contentDiv = document.getElementById('breakdownContent');
+            if (!contentDiv) return;
+            
+            // Extract location name from modal content
+            const locationName = contentDiv.querySelector('strong')?.textContent || 'Location';
+            
+            // Prompt for download reason
+            const reason = prompt('Please explain why you need this data:');
+            if (!reason || reason.trim().length < 10) {
+                alert('Please provide a reason (minimum 10 characters)');
+                return;
+            }
+            
+            // Generate download content
+            const modalHTML = contentDiv.innerHTML;
+            const timestamp = new Date().toLocaleString();
+            
+            let content = 'POVERTY CALCULATION BREAKDOWN REPORT\n';
+            content += '==================================================\n\n';
+            content += `Generated: ${timestamp}\n`;
+            content += `Download Reason: ${reason}\n\n`;
+            content += 'LOCATION INFORMATION\n';
+            content += '--------------------------------------------------\n';
+            content += `Location: ${locationName}\n\n`;
+            content += 'CALCULATION BREAKDOWN\n';
+            content += '--------------------------------------------------\n';
+            content += modalHTML.replace(/<[^>]*>/g, '\n').replace(/\n{3,}/g, '\n\n');
+            
+            // Create and download file
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `poverty-calculation-breakdown-${Date.now()}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert('Calculation breakdown downloaded successfully!');
+        }
+        
+        // Update dashboard account status
+        function updateDashboardAccountStatus() {
+            const subscriptionManager = window.subscriptionManager;
+            const accountStatusEl = document.getElementById('dashboardAccountStatus');
+            const countdownEl = document.getElementById('premiumCountdown');
+            
+            if (!accountStatusEl) return;
+            
+            if (subscriptionManager && subscriptionManager.subscriptionStatus && 
+                subscriptionManager.subscriptionStatus.hasActiveSubscription) {
+                // Premium account
+                accountStatusEl.textContent = 'Premium Account';
+                accountStatusEl.className = 'status-indicator-small status-premium';
+                
+                // Show countdown
+                if (countdownEl) {
+                    const subscription = subscriptionManager.subscriptionStatus.subscription;
+                    const expiryDate = new Date(subscription.dateTo);
+                    const now = new Date();
+                    const diff = expiryDate - now;
+                    
+                    if (diff > 0) {
+                        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                        countdownEl.textContent = `Expires in: ${days}d ${hours}h ${minutes}m`;
+                        countdownEl.style.display = 'block';
+                    } else {
+                        countdownEl.textContent = 'Expired';
+                        countdownEl.style.display = 'block';
+                    }
+                }
+            } else {
+                // Trial account
+                accountStatusEl.textContent = 'Trial Account';
+                accountStatusEl.className = 'status-indicator-small status-trial';
+                if (countdownEl) {
+                    countdownEl.style.display = 'none';
+                }
+            }
+        }
+        
+        // Update account status when subscription manager initializes
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                updateDashboardAccountStatus();
+                // Update every minute for countdown
+                setInterval(updateDashboardAccountStatus, 60000);
+            }, 1000);
+        });
+        
+        // Listen for subscription updates
+        document.addEventListener('subscriptionUpdated', updateDashboardAccountStatus);
+    </script>
+</body>
+</html>

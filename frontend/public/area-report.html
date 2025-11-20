@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPMAS - Area Detailed Report</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <script src="scripts/theme-manager.js"></script>
+    <link rel="stylesheet" href="styles/area-report.css">
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌍</text></svg>">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="logo">
+                    <span class="logo-icon">🌍</span>
+                    <div>
+                        <h1>IPMAS</h1>
+                        <span class="logo-subtitle">Integrated Poverty Mapping & Analysis System</span>
+                    </div>
+                </div>
+                <nav class="nav">
+                    <a href="/" class="nav-link">Dashboard</a>
+                    <a href="/poverty-map.html" class="nav-link">Poverty Map</a>
+                </nav>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-primary print-only-hidden" onclick="downloadPDFReport()" id="downloadPDFBtn">
+                    📥 Download PDF Report
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="loading-state">
+        <div class="loading-spinner"></div>
+        <p>Loading area report...</p>
+    </div>
+
+    <!-- Report Content -->
+    <div id="reportContent" class="report-container" style="display: none;">
+        <!-- Report Header -->
+        <div class="report-header">
+            <div class="report-header-content">
+                <h1 id="reportTitle">Area Poverty Assessment Report</h1>
+                <div class="report-meta">
+                    <span id="reportLocation">Location: Loading...</span>
+                </div>
+            </div>
+            <div class="report-actions print-only-hidden">
+                <button class="btn btn-primary" onclick="downloadPDFReport()" id="downloadBtn">
+                    📥 Download PDF
+                </button>
+                <button class="btn btn-secondary" onclick="window.print()">
+                    🖨️ Print Report
+                </button>
+            </div>
+        </div>
+
+        <!-- Executive Summary -->
+        <section class="report-section">
+            <h2>📊 Executive Summary</h2>
+            <div class="summary-grid">
+                <div class="summary-card primary">
+                    <div class="summary-icon">📈</div>
+                    <div class="summary-content">
+                        <h3>Poverty Index</h3>
+                        <div class="summary-value" id="summaryPovertyIndex">0.0%</div>
+                        <div class="summary-label" id="summarySeverity">Loading...</div>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-icon">🎓</div>
+                    <div class="summary-content">
+                        <h3>Education Access</h3>
+                        <div class="summary-value" id="summaryEducation">0.0%</div>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-icon">🏥</div>
+                    <div class="summary-content">
+                        <h3>Health Vulnerability</h3>
+                        <div class="summary-value" id="summaryHealth">0.0%</div>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-icon">🏠</div>
+                    <div class="summary-content">
+                        <h3>Housing Quality</h3>
+                        <div class="summary-value" id="summaryHousing">0.0%</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Area Overview -->
+        <section class="report-section">
+            <h2>📍 Area Overview</h2>
+            <div class="overview-content" id="areaOverview">
+                <!-- Populated by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Calculation Breakdown -->
+        <section class="report-section">
+            <h2>🔢 Detailed Calculation Breakdown</h2>
+            <div class="breakdown-content">
+                <div class="breakdown-intro" id="breakdownIntro">
+                    <!-- Formula and explanation -->
+                </div>
+                <div class="breakdown-table-container">
+                    <table class="breakdown-table-detailed" id="breakdownTable">
+                        <thead>
+                            <tr>
+                                <th>Indicator</th>
+                                <th>Status</th>
+                                <th>Raw Score</th>
+                                <th>Adjusted Score</th>
+                                <th>Weight</th>
+                                <th>Contribution</th>
+                                <th>Impact</th>
+                            </tr>
+                        </thead>
+                        <tbody id="breakdownTableBody">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="explainability-section" id="explainabilityInsights">
+                    <!-- Explainability insights populated by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Visualizations -->
+        <section class="report-section">
+            <h2>📊 Data Visualizations</h2>
+            <div class="visualization-grid">
+                <div class="viz-card">
+                    <h3>Poverty Index Distribution</h3>
+                    <canvas id="povertyChart"></canvas>
+                </div>
+                <div class="viz-card">
+                    <h3>Indicator Comparison</h3>
+                    <canvas id="indicatorChart"></canvas>
+                </div>
+                <div class="viz-card">
+                    <h3>Layer Contribution Breakdown</h3>
+                    <canvas id="contributionChart"></canvas>
+                </div>
+                <div class="viz-card">
+                    <h3>Weight Distribution</h3>
+                    <canvas id="weightChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Detailed Analysis -->
+        <section class="report-section">
+            <h2>🔍 Detailed Analysis & Insights</h2>
+            <div class="analysis-content" id="detailedAnalysis">
+                <!-- Populated by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Recommendations -->
+        <section class="report-section">
+            <h2>💡 Recommendations & Action Items</h2>
+            <div class="recommendations-content" id="recommendations">
+                <!-- Populated by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Methodology -->
+        <section class="report-section">
+            <h2>📚 Methodology & Data Sources</h2>
+            <div class="methodology-content" id="methodology">
+                <!-- Populated by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Report Footer -->
+        <div class="report-footer">
+            <p><strong>IPMAS - Integrated Poverty Mapping & Analysis System</strong></p>
+            <p>© 2025 | Empowering communities through data-driven insights ✨</p>
+            <p>Report Generated: <span id="reportFooterDate"></span></p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="scripts/config.js"></script>
+    <script src="scripts/dynamic-poverty-calculator.js"></script>
+    <script src="scripts/area-report.js"></script>
+</body>
+</html>
+

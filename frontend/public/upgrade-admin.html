@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Upgrade Leads | IPMAS Admin</title>
+    <script src="/scripts/theme-manager.js"></script>
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="/styles/upgrade-admin.css">
+    <link rel="icon" href="/icons/favicon.ico" type="image/x-icon">
+</head>
+<body class="upgrade-page">
+    <main class="upgrade-single">
+        <section class="upgrade-single-card">
+            <header>
+                <a href="/index.html" class="upgrade-back-link">← Back to Dashboard</a>
+                <h1>Premium Upgrade Leads</h1>
+                <p>Review organizations requesting IPMAS Premium access.</p>
+            </header>
+
+            <section class="admin-controls">
+                <div class="form-group">
+                    <label for="adminToken">Admin Token</label>
+                    <input id="adminToken" type="password" placeholder="Enter admin token">
+                </div>
+                <div class="form-group">
+                    <label for="leadStatus">Status</label>
+                    <select id="leadStatus">
+                        <option value="">All</option>
+                        <option value="received">Received</option>
+                        <option value="contacted">Contacted</option>
+                        <option value="converted">Converted</option>
+                        <option value="closed">Closed</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="leadSearch">Search</label>
+                    <input id="leadSearch" type="text" placeholder="Organization or contact">
+                </div>
+                <button id="loadLeadsBtn" class="btn btn-primary">Load Leads</button>
+                <div id="adminStatus" class="upgrade-status-banner"></div>
+            </section>
+
+            <section>
+                <div class="leads-table-wrapper">
+                    <table id="leadTable">
+                        <thead>
+                            <tr>
+                                <th>Organization</th>
+                                <th>Contact</th>
+                                <th>Payment</th>
+                                <th>Status</th>
+                                <th>Submitted</th>
+                                <th>Daraja</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="6" class="empty-row">No leads loaded yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <script src="/scripts/upgrade-admin.js"></script>
+</body>
+</html>
+

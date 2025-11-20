@@ -1,0 +1,28 @@
+# Ignore data files but keep directory structure
+
+# Ignore all data files
+*.csv
+*.xlsx
+*.xls
+*.json
+*.dta
+*.sav
+*.sas7bdat
+*.shp
+*.dbf
+*.shx
+*.prj
+*.zip
+*.gz
+*.tar
+
+# But keep README and directory structure
+!README.md
+!.gitkeep
+!scripts/**
+
+# Keep script files
+!*.js
+!*.py
+!*.sql
+

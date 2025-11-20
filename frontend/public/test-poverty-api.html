@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Poverty API</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .result { background: var(--panel-bg); color: var(--text-primary); padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #4CAF50; box-shadow: var(--panel-shadow); }
+        .error { border-left-color: #f44336; }
+        .loading { border-left-color: #ff9800; }
+        pre { background: #f9f9f9; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Testing Poverty API Connection</h1>
+    
+    <div class="result loading" id="status">
+        Connecting to backend...
+    </div>
+    
+    <div class="result" id="data" style="display:none;">
+        <h3>Data Preview:</h3>
+        <div id="preview"></div>
+    </div>
+    
+    <script>
+        async function testAPI() {
+            const statusDiv = document.getElementById('status');
+            const dataDiv = document.getElementById('data');
+            const previewDiv = document.getElementById('preview');
+            
+            try {
+                const apiUrl = 'http://localhost:3001/api/v1/analytics/poverty/all';
+                statusDiv.innerHTML = `Fetching from: ${apiUrl}...`;
+                
+                const response = await fetch(apiUrl);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                const featureCount = data.features ? data.features.length : 0;
+                
+                statusDiv.innerHTML = `
+                    <strong>SUCCESS!</strong><br>
+                    Received ${featureCount} locations from backend<br>
+                    Status: ${response.status} ${response.statusText}
+                `;
+                
+                if (featureCount > 0) {
+                    const first5 = data.features.slice(0, 5).map((f, i) => 
+                        `${i+1}. ${f.properties.name} (${f.properties.county}) - Poverty: ${f.properties.poverty_index}`
+                    ).join('<br>');
+                    
+                    previewDiv.innerHTML = `
+                        <p><strong>First 5 locations:</strong></p>
+                        ${first5}
+                    `;
+                    dataDiv.style.display = 'block';
+                } else {
+                    statusDiv.className = 'result error';
+                    statusDiv.innerHTML = '<strong>ERROR:</strong> No features in response!';
+                }
+                
+            } catch (error) {
+                statusDiv.className = 'result error';
+                statusDiv.innerHTML = `
+                    <strong>ERROR:</strong><br>
+                    ${error.message}<br><br>
+                    <strong>Make sure:</strong><br>
+                    - Backend is running on port 3001<br>
+                    - DATABASE_URL is set correctly in backend/.env<br>
+                    - PostgreSQL has DHS data imported
+                `;
+                console.error('API Error:', error);
+            }
+        }
+        
+        testAPI();
+    </script>
+</body>
+</html>
+

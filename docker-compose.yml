@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: ipmas-postgres
+    environment:
+      POSTGRES_DB: ipmas_db
+      POSTGRES_USER: ipmas_user
+      POSTGRES_PASSWORD: ipmas_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/src/config/postgis.sql:/docker-entrypoint-initdb.d/postgis.sql
+    networks:
+      - ipmas-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: ipmas-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - ipmas-network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ipmas-backend
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=ipmas_db
+      - DB_USER=ipmas_user
+      - DB_PASSWORD=ipmas_password
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - ipmas-network
+    volumes:
+      - ./backend/logs:/app/logs
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ipmas-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - ipmas-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  ipmas-network:
+    driver: bridge

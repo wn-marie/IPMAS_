@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPMAS - Settings & User Management</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <script src="scripts/theme-manager.js"></script>
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌍</text></svg>">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">🌍</span>
+                <div>
+                    <h1>IPMAS</h1>
+                    <span class="logo-subtitle">Integrated Poverty Mapping & Analysis System</span>
+                </div>
+            </div>
+            <nav class="nav">
+                <a href="/" class="nav-link">Dashboard</a>
+                <a href="/poverty-models.html" class="nav-link">Poverty Models</a>
+                <a href="/projects.html" class="nav-link">Local Projects</a>
+            </nav>
+            <div class="header-actions">
+                <div class="user-panel">
+                    <div class="user-avatar" id="userAvatar">Sign up</div>
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="user-dropdown-item" onclick="goToSettings()">⚙️</div>
+                        <div class="user-dropdown-item" onclick="viewHistory()">History</div>
+                        <div class="user-dropdown-item" onclick="submitFeedback()">Feedback</div>
+                        <div class="user-dropdown-item" onclick="logout()">Logout</div>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="goToDashboard()">🏠 Dashboard</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Settings Header -->
+    <div class="settings-header">
+        <h1>Settings & User Management</h1>
+        <p>Manage your account, preferences, and system settings</p>
+    </div>
+
+    <!-- Main Content -->
+    <main class="settings-container">
+        <!-- Settings List View (Dashboard) -->
+        <div id="settingsListView" class="settings-list-view">
+            <!-- Subscription Status -->
+            <section class="subscription-status">
+                <h3>📊 Account Status</h3>
+                <div class="status-indicator status-trial" id="accountStatus">Trial Account</div>
+                <div class="trial-counter" id="trialCounter">
+                    <strong>🎯 Trial Usage:</strong> <span id="trialCount">3</span> of 3 free previews used
+                </div>
+                <div class="usage-stats">
+                    <div class="usage-stat">
+                        <div class="usage-stat-value" id="searchesUsed">3</div>
+                        <div class="usage-stat-label">Searches Used</div>
+                    </div>
+                    <div class="usage-stat">
+                        <div class="usage-stat-value" id="downloadsUsed">0</div>
+                        <div class="usage-stat-label">Downloads</div>
+                    </div>
+                    <div class="usage-stat">
+                        <div class="usage-stat-value" id="reportsGenerated">0</div>
+                        <div class="usage-stat-label">Generating Insights</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Premium Upgrade Banner -->
+
+            <!-- Settings List -->
+            <div class="settings-list-container">
+                <h2 class="settings-list-title">Settings</h2>
+                <div class="settings-list">
+                    <div class="settings-list-item" onclick="navigateToSetting('profile')">
+                        <div class="settings-item-icon">👤</div>
+                        <div class="settings-item-content">
+                            <h3 class="settings-item-title">User Profile</h3>
+                            <p class="settings-item-description">Manage your personal information, organization details, and default location preferences</p>
+                        </div>
+                        <div class="settings-item-arrow">→</div>
+                    </div>
+
+                    <div class="settings-list-item" onclick="navigateToSetting('security')">
+                        <div class="settings-item-icon">🔒</div>
+                        <div class="settings-item-content">
+                            <h3 class="settings-item-title">Account Security</h3>
+                            <p class="settings-item-description">Update password, manage data protection settings, and account deletion options</p>
+                        </div>
+                        <div class="settings-item-arrow">→</div>
+                    </div>
+
+                    <div class="settings-list-item" onclick="navigateToSetting('notifications')">
+                        <div class="settings-item-icon">🔔</div>
+                        <div class="settings-item-content">
+                            <h3 class="settings-item-title">Notifications</h3>
+                            <p class="settings-item-description">Configure email, SMS, and in-app notification preferences</p>
+                        </div>
+                        <div class="settings-item-arrow">→</div>
+                    </div>
+
+                    <div class="settings-list-item" onclick="navigateToSetting('preferences')">
+                        <div class="settings-item-icon">⚙️</div>
+                        <div class="settings-item-content">
+                            <h3 class="settings-item-title">System Preferences</h3>
+                            <p class="settings-item-description">Customize language, timezone, date format, map style, and auto-refresh settings</p>
+                        </div>
+                        <div class="settings-item-arrow">→</div>
+                    </div>
+
+                    <div class="settings-list-item" onclick="navigateToSetting('connection')">
+                        <div class="settings-item-icon">🌐</div>
+                        <div class="settings-item-content">
+                            <h3 class="settings-item-title">Connection Status & Offline Mode</h3>
+                            <p class="settings-item-description">See why the system is online or offline and how it affects field data collection</p>
+                        </div>
+                        <div class="settings-item-arrow">→</div>
+                    </div>
+
+                    <div class="settings-list-item" onclick="navigateToSetting('api')">
+                        <div class="settings-item-icon">🔗</div>
+                        <div class="settings-item-content">
+                            <h3 class="settings-item-title">API Access</h3>
+                            <p class="settings-item-description">Manage your API keys, view usage statistics, and access documentation</p>
+                        </div>
+                        <div class="settings-item-arrow">→</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Detail Views -->
+        <div id="settingsDetailView" class="settings-detail-view" style="display: none;">
+            <button class="btn-back" onclick="navigateBackToList()">
+                ← Back to Settings
+            </button>
+            
+            <!-- Profile Detail View -->
+            <div id="detail-profile" class="settings-detail-content" style="display: none;">
+                <div class="settings-card">
+                    <h3>👤 User Profile</h3>
+                    <form id="profileForm">
+                        <div class="form-group">
+                            <label class="form-label" for="fullName">Full Name</label>
+                            <input type="text" class="form-input" id="fullName" value="John Doe" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="email">Email Address</label>
+                            <input type="email" class="form-input" id="email" value="john.doe@example.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="organization">Organization</label>
+                            <input type="text" class="form-input" id="organization" value="Government of Kenya">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="role">Role/Position</label>
+                            <input type="text" class="form-input" id="role" value="Data Analyst">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="defaultLocation">Location</label>
+                            <select class="form-select" id="defaultLocation">
+                                <option value="baringo">Baringo</option>
+                                <option value="bomet">Bomet</option>
+                                <option value="bungoma">Bungoma</option>
+                                <option value="busia">Busia</option>
+                                <option value="elgeyo-marakwet">Elgeyo Marakwet</option>
+                                <option value="embu">Embu</option>
+                                <option value="garissa">Garissa</option>
+                                <option value="homa-bay">Homa Bay</option>
+                                <option value="isiolo">Isiolo</option>
+                                <option value="kajiado">Kajiado</option>
+                                <option value="kakamega">Kakamega</option>
+                                <option value="kericho">Kericho</option>
+                                <option value="kiambu">Kiambu</option>
+                                <option value="kilifi">Kilifi</option>
+                                <option value="kirinyaga">Kirinyaga</option>
+                                <option value="kisii">Kisii</option>
+                                <option value="kisumu">Kisumu</option>
+                                <option value="kitui">Kitui</option>
+                                <option value="kwale">Kwale</option>
+                                <option value="laikipia">Laikipia</option>
+                                <option value="lamu">Lamu</option>
+                                <option value="machakos">Machakos</option>
+                                <option value="makueni">Makueni</option>
+                                <option value="mandera">Mandera</option>
+                                <option value="marsabit">Marsabit</option>
+                                <option value="meru">Meru</option>
+                                <option value="migori">Migori</option>
+                                <option value="mombasa">Mombasa</option>
+                                <option value="muranga">Murang'a</option>
+                                <option value="nairobi">Nairobi</option>
+                                <option value="nakuru">Nakuru</option>
+                                <option value="nandi">Nandi</option>
+                                <option value="narok">Narok</option>
+                                <option value="nyamira">Nyamira</option>
+                                <option value="nyandarua">Nyandarua</option>
+                                <option value="nyeri">Nyeri</option>
+                                <option value="samburu">Samburu</option>
+                                <option value="siaya">Siaya</option>
+                                <option value="taita-taveta">Taita Taveta</option>
+                                <option value="tana-river">Tana River</option>
+                                <option value="tharaka-nithi">Tharaka Nithi</option>
+                                <option value="trans-nzoia">Trans Nzoia</option>
+                                <option value="turkana">Turkana</option>
+                                <option value="uasin-gishu">Uasin Gishu</option>
+                                <option value="vihiga">Vihiga</option>
+                                <option value="wajir">Wajir</option>
+                                <option value="west-pokot">West Pokot</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Profile</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Security Detail View -->
+            <div id="detail-security" class="settings-detail-content" style="display: none;">
+                <div class="settings-card">
+                    <h3>🔒 Account Security</h3>
+                    <form id="securityForm">
+                        <div class="form-group">
+                            <label class="form-label" for="currentPassword">Current Password</label>
+                            <input type="password" class="form-input" id="currentPassword" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="newPassword">New Password</label>
+                            <input type="password" class="form-input" id="newPassword" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="confirmPassword">Confirm New Password</label>
+                            <input type="password" class="form-input" id="confirmPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Password</button>
+                    </form>
+                    <div class="data-governance">
+                        <h4>🔐 Data Protection</h4>
+                        <p>Your data is protected under Kenya's Data Protection Act 2019</p>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="dataConsent" checked>
+                            <label for="dataConsent">I consent to data processing for IPMAS services</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="analyticsConsent" checked>
+                            <label for="analyticsConsent">Allow usage analytics to improve services</label>
+                        </div>
+                        <button class="btn btn-secondary" onclick="downloadPersonalData()">Download My Data</button>
+                        <button class="btn btn-danger" onclick="deleteAccount()">Delete Account</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications Detail View -->
+            <div id="detail-notifications" class="settings-detail-content" style="display: none;">
+                <div class="settings-card">
+                    <h3>🔔 Notifications</h3>
+                    <div class="notification-settings">
+                        <div class="notification-item">
+                            <div class="notification-info">
+                                <div class="notification-title">Email Notifications</div>
+                                <div class="notification-description">Receive updates about new features and reports</div>
+                            </div>
+                            <div class="toggle-switch active" onclick="toggleNotification(this, 'email')"></div>
+                        </div>
+                        <div class="notification-item">
+                            <div class="notification-info">
+                                <div class="notification-title">SMS Alerts</div>
+                                <div class="notification-description">Get SMS notifications for urgent updates</div>
+                            </div>
+                            <div class="toggle-switch" onclick="toggleNotification(this, 'sms')"></div>
+                        </div>
+                        <div class="notification-item">
+                            <div class="notification-info">
+                                <div class="notification-title">Project Updates</div>
+                                <div class="notification-description">Notifications about local projects in your area</div>
+                            </div>
+                            <div class="toggle-switch active" onclick="toggleNotification(this, 'projects')"></div>
+                        </div>
+                        <div class="notification-item">
+                            <div class="notification-info">
+                                <div class="notification-title">Data Insights</div>
+                                <div class="notification-description">Weekly summaries of new data and insights</div>
+                            </div>
+                            <div class="toggle-switch" onclick="toggleNotification(this, 'insights')"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preferences Detail View -->
+            <div id="detail-preferences" class="settings-detail-content" style="display: none;">
+                <div class="settings-card">
+                    <h3>⚙️ System Preferences</h3>
+                    <form id="preferencesForm">
+                        <div class="form-group">
+                            <label class="form-label" for="language">Language</label>
+                            <select class="form-select" id="language">
+                                <option value="en">English</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="timezone">Timezone</label>
+                            <select class="form-select" id="timezone">
+                                <option value="Africa/Nairobi">Africa/Nairobi (EAT)</option>
+                                <option value="UTC">UTC</option>
+                            </select>
+                            <small class="form-hint" id="timezonePreview"></small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="dateFormat">Date Format</label>
+                            <select class="form-select" id="dateFormat">
+                                <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                                <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                                <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                            </select>
+                            <small class="form-hint" id="dateFormatPreview"></small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="mapStyle">Map Style</label>
+                            <select class="form-select" id="mapStyle">
+                                <option value="default">Default</option>
+                                <option value="satellite">Satellite</option>
+                                <option value="terrain">Terrain</option>
+                            </select>
+                            <small class="form-hint" id="mapStylePreview"></small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="theme">Color Theme</label>
+                            <select class="form-select" id="theme">
+                                <option value="default">Default (Green)</option>
+                                <option value="blue">Blue</option>
+                                <option value="purple">Purple</option>
+                                <option value="orange">Orange</option>
+                                <option value="dark">Dark Mode</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="autoRefresh">Auto-refresh Interval</label>
+                            <select class="form-select" id="autoRefresh">
+                                <option value="0">Disabled</option>
+                                <option value="30">30 seconds</option>
+                                <option value="60">1 minute</option>
+                                <option value="300">5 minutes</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Preferences</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Connection Status Detail View -->
+            <div id="detail-connection" class="settings-detail-content" style="display: none;">
+                <div class="settings-card">
+                    <h3>🌐 Connection Status & Offline Mode</h3>
+                    <p class="form-hint" style="margin-bottom: 16px;">
+                        This reflects whether the device and browser can reach the IPMAS server. When offline, field staff
+                        should save data locally and sync when the system is online again.
+                    </p>
+                    <div class="form-group">
+                        <label class="form-label">Current Status</label>
+                        <div class="connection-status-detail">
+                            <span id="connectionStatusDot" class="status-dot offline"></span>
+                            <span id="connectionStatusText">Offline Mode</span>
+                        </div>
+                        <small id="connectionStatusReason" class="form-hint"></small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">What can make the system offline?</label>
+                        <ul class="form-hint">
+                            <li>IPMAS server is not running or unreachable from this device.</li>
+                            <li>Realtime channel (Socket.IO) is unavailable or has a connection error.</li>
+                            <li>Network restrictions (firewall/VPN) blocking access to the backend.</li>
+                        </ul>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Field guidance</label>
+                        <p class="form-hint">
+                            When the status is Offline, agents should store collected data safely on the device and
+                            postpone upload until the indicator shows Online again. When Online, they can submit
+                            questionnaires and reports directly to the IPMAS server.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Detail View -->
+            <div id="detail-api" class="settings-detail-content" style="display: none;">
+                <div class="settings-card">
+                    <h3>🔗 API Access</h3>
+                    <div class="form-group">
+                        <label class="form-label" for="apiKey">API Key</label>
+                        <input type="text" class="form-input" id="apiKey" value="ipmas_sk_..." readonly>
+                        <button class="btn btn-secondary" onclick="regenerateApiKey()">Regenerate</button>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="apiUsage">API Usage (This Month)</label>
+                        <input type="text" class="form-input" id="apiUsage" value="0 / 1000 requests" readonly>
+                    </div>
+                    <button class="btn btn-primary" onclick="viewApiDocumentation()">API Documentation</button>
+                </div>
+            </div>
+
+            <!-- Feedback Detail View -->
+            <div id="detail-feedback" class="settings-detail-content" style="display: none;">
+                <div class="settings-card">
+                    <h3>💬 Feedback & Support</h3>
+                    <form id="feedbackForm">
+                        <div class="form-group">
+                            <label class="form-label" for="feedbackType">Feedback Type</label>
+                            <select class="form-select" id="feedbackType" required>
+                                <option value="">Select type...</option>
+                                <option value="bug">Bug Report</option>
+                                <option value="feature">Feature Request</option>
+                                <option value="improvement">Improvement Suggestion</option>
+                                <option value="general">General Feedback</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="feedbackMessage">Message</label>
+                            <textarea class="form-textarea" id="feedbackMessage" placeholder="Describe your feedback, bug report, or feature request..." required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="priority">Priority</label>
+                            <select class="form-select" id="priority">
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit Feedback</button>
+                    </form>
+                    <div style="margin-top: 20px;">
+                        <h4>📞 Contact Support</h4>
+                        <p><strong>Email:</strong> mw270761@gmail.com</p>
+                        <p><strong>Phone:</strong> +254 718 731 762</p>
+                        <p><strong>Hours:</strong> Monday - Friday, 8:00 AM - 5:00 PM EAT</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-info">
+                <span class="footer-tagline">Empowering communities through data-driven insights ✨</span>
+                <p class="footer-copyright">© 2025 | Designed by Mary Wairimu</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="scripts/config.js"></script>
+    <script src="scripts/subscription.js"></script>
+    <script src="scripts/usage-tracker.js"></script>
+    <script src="scripts/settings.js"></script>
+    <script src="scripts/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Main Page - IPMAS</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="styles/main.css">
+    <script src="scripts/theme-manager.js"></script>
+    <style>
+        .debug-info {
+            background: #f0f0f0;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .status {
+            padding: 5px;
+            margin: 5px 0;
+            border-radius: 3px;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .warning { background-color: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <div class="debug-info">
+        <h2>Debug Information</h2>
+        <div id="debug-output"></div>
+    </div>
+
+    <div id="map" style="height: 400px; width: 100%; border: 1px solid #ccc;"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const debugOutput = document.getElementById('debug-output');
+        
+        function addDebug(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = message;
+            debugOutput.appendChild(div);
+            console.log(`[DEBUG] ${message}`);
+        }
+        
+        addDebug('Page loaded, starting debug checks...');
+        
+        // Check if Leaflet is loaded
+        if (typeof L !== 'undefined') {
+            addDebug('✅ Leaflet.js loaded successfully!', 'success');
+            addDebug(`Leaflet version: ${L.version}`, 'success');
+            
+            try {
+                // Try to create a map
+                const map = L.map('map').setView([-1.2921, 36.8219], 6);
+                addDebug('✅ Map container created successfully', 'success');
+                
+                // Add OpenStreetMap tiles
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+                addDebug('✅ OpenStreetMap tiles added successfully', 'success');
+                
+                // Add a marker
+                L.marker([-1.2921, 36.8219]).addTo(map)
+                    .bindPopup('Nairobi, Kenya - Real-time OSM Map')
+                    .openPopup();
+                addDebug('✅ Marker added successfully', 'success');
+                
+                addDebug('🎉 All tests passed! Map should be working.', 'success');
+                
+            } catch (error) {
+                addDebug(`❌ Error creating map: ${error.message}`, 'error');
+            }
+        } else {
+            addDebug('❌ Leaflet.js not loaded!', 'error');
+            addDebug('Check browser console for CSP errors', 'warning');
+        }
+        
+        // Check for CSP errors
+        window.addEventListener('error', function(e) {
+            if (e.message.includes('Content Security Policy') || e.message.includes('CSP')) {
+                addDebug(`❌ CSP Error: ${e.message}`, 'error');
+            }
+        });
+        
+        // Log all console errors
+        const originalError = console.error;
+        console.error = function(...args) {
+            addDebug(`Console Error: ${args.join(' ')}`, 'error');
+            originalError.apply(console, args);
+        };
+    </script>
+</body>
+</html>

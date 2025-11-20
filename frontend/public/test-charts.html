@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Charts - IPMAS</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">🌍</span>
+                <div>
+                    <h1>IPMAS</h1>
+                    <span class="logo-subtitle">Integrated Poverty Mapping & Analysis System</span>
+                </div>
+            </div>
+            <nav class="nav">
+                <a href="/" class="nav-link">Dashboard</a>
+                <a href="/reports" class="nav-link">Reports</a>
+                <a href="/poverty-models" class="nav-link">Poverty Models</a>
+                <a href="/projects" class="nav-link">Local Projects</a>
+            </nav>
+            <div class="header-actions">
+                <div class="user-panel">
+                    <div class="user-avatar" id="userAvatar">Sign up</div>
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="user-dropdown-item" onclick="goToSettings()">⚙️</div>
+                        <div class="user-dropdown-item" onclick="viewHistory()">History</div>
+                        <div class="user-dropdown-item" onclick="submitFeedback()">Feedback</div>
+                        <div class="user-dropdown-item" onclick="logout()">Logout</div>
+                    </div>
+                </div>
+                <div class="connection-status">
+                    <span class="status-dot offline"></span>
+                    <span class="status-text">Connecting...</span>
+                </div>
+                <button class="btn btn-primary" id="toggleDebug">Debug</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- Chart Controls Sidebar -->
+        <section class="sidebar">
+            <div class="sidebar-section">
+                <h3>Chart Controls</h3>
+                <div class="form-group">
+                    <label for="chartType">Chart Type</label>
+                    <select id="chartType" class="form-control">
+                        <option value="bar">Bar Chart</option>
+                        <option value="line">Line Chart</option>
+                        <option value="doughnut">Doughnut Chart</option>
+                        <option value="pie">Pie Chart</option>
+                        <option value="scatter">Scatter Plot</option>
+                        <option value="radar">Radar Chart</option>
+                        <option value="bubble">Bubble Chart</option>
+                        <option value="polarArea">Polar Area</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="dataSource">Data Source</label>
+                    <select id="dataSource" class="form-control">
+                        <option value="poverty">Poverty Index</option>
+                        <option value="education">Education Access</option>
+                        <option value="health">Health Vulnerability</option>
+                        <option value="water">Water Access</option>
+                        <option value="employment">Employment Rate</option>
+                        <option value="housing">Housing Quality</option>
+                        <option value="all">All Indicators</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="colorScheme">Color Scheme</label>
+                    <select id="colorScheme" class="form-control">
+                        <option value="default">Default</option>
+                        <option value="viridis">Viridis</option>
+                        <option value="plasma">Plasma</option>
+                        <option value="inferno">Inferno</option>
+                        <option value="magma">Magma</option>
+                        <option value="cividis">Cividis</option>
+                        <option value="rainbow">Rainbow</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="animationSpeed">Animation Speed</label>
+                    <input type="range" id="animationSpeed" class="form-control" min="0" max="2000" value="1000">
+                    <span id="animationSpeedValue">1000ms</span>
+                </div>
+
+                <button class="btn btn-primary" id="updateChartBtn">Update Chart</button>
+                <button class="btn btn-secondary" id="exportChartBtn">Export Chart</button>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>Performance Test</h3>
+                <div class="form-group">
+                    <label for="dataPoints">Data Points</label>
+                    <input type="range" id="dataPoints" class="form-control" min="10" max="1000" value="50">
+                    <span id="dataPointsValue">50 points</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="updateFrequency">Update Frequency</label>
+                    <select id="updateFrequency" class="form-control">
+                        <option value="1000">1 second</option>
+                        <option value="500">500ms</option>
+                        <option value="100">100ms</option>
+                        <option value="50">50ms</option>
+                        <option value="10">10ms</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-primary" id="startPerformanceTest">Start Test</button>
+                <button class="btn btn-danger" id="stopPerformanceTest" style="display: none;">Stop Test</button>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>Chart Settings</h3>
+                <div class="layer-controls">
+                    <div class="layer-toggle">
+                        <input type="checkbox" id="showLegend" checked>
+                        <div class="toggle-slider"></div>
+                        <span class="layer-label">Show Legend</span>
+                    </div>
+                    
+                    <div class="layer-toggle">
+                        <input type="checkbox" id="showGrid" checked>
+                        <div class="toggle-slider"></div>
+                        <span class="layer-label">Show Grid</span>
+                    </div>
+                    
+                    <div class="layer-toggle">
+                        <input type="checkbox" id="showTooltips" checked>
+                        <div class="toggle-slider"></div>
+                        <span class="layer-label">Show Tooltips</span>
+                    </div>
+                    
+                    <div class="layer-toggle">
+                        <input type="checkbox" id="responsiveChart" checked>
+                        <div class="toggle-slider"></div>
+                        <span class="layer-label">Responsive</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Chart Area -->
+        <section class="map-section">
+            <div class="map-header">
+                <h2>Chart Testing & Performance</h2>
+                <div class="map-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Current Chart</span>
+                        <span class="stat-value" id="currentChartType">Bar Chart</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Data Points</span>
+                        <span class="stat-value" id="currentDataPoints">50</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Render Time</span>
+                        <span class="stat-value" id="renderTime">0ms</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="map-container">
+                <canvas id="testChart" style="max-height: 100%;"></canvas>
+            </div>
+        </section>
+
+        <!-- Performance Metrics -->
+        <section class="stats-section">
+            <div class="stats-header">
+                <h3>Performance Metrics</h3>
+                <div class="refresh-controls">
+                    <span class="last-updated" id="lastUpdated">Last updated: Never</span>
+                    <button class="btn btn-secondary" id="resetMetricsBtn">Reset</button>
+                </div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">⚡</div>
+                    <div class="stat-content">
+                        <h4>Average Render Time</h4>
+                        <div class="stat-metric">
+                            <span class="metric-value" id="avgRenderTime">0</span>
+                            <span class="metric-unit">ms</span>
+                        </div>
+                        <div class="stat-trend">
+                            <span class="trend-icon">📊</span>
+                            <span class="trend-text" id="renderTrend">Stable</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">📈</div>
+                    <div class="stat-content">
+                        <h4>Frames Per Second</h4>
+                        <div class="stat-metric">
+                            <span class="metric-value" id="fps">0</span>
+                            <span class="metric-unit">fps</span>
+                        </div>
+                        <div class="stat-trend">
+                            <span class="trend-icon">📊</span>
+                            <span class="trend-text" id="fpsTrend">Stable</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">💾</div>
+                    <div class="stat-content">
+                        <h4>Memory Usage</h4>
+                        <div class="stat-metric">
+                            <span class="metric-value" id="memoryUsage">0</span>
+                            <span class="metric-unit">MB</span>
+                        </div>
+                        <div class="stat-trend">
+                            <span class="trend-icon">📊</span>
+                            <span class="trend-text" id="memoryTrend">Stable</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">🔄</div>
+                    <div class="stat-content">
+                        <h4>Update Count</h4>
+                        <div class="stat-metric">
+                            <span class="metric-value" id="updateCount">0</span>
+                            <span class="metric-unit">updates</span>
+                        </div>
+                        <div class="stat-trend">
+                            <span class="trend-icon">📊</span>
+                            <span class="trend-text" id="updateTrend">Stable</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Multiple Chart Types -->
+        <section class="analytics-section">
+            <div class="analytics-header">
+                <h3>Chart Type Comparison</h3>
+                <div class="analytics-controls">
+                    <button class="btn btn-secondary" id="regenerateAllCharts">Regenerate All</button>
+                    <button class="btn btn-secondary" id="exportAllCharts">Export All</button>
+                </div>
+            </div>
+            
+            <div class="analytics-grid">
+                <div class="chart-container">
+                    <h4>Bar Chart</h4>
+                    <canvas id="barChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h4>Line Chart</h4>
+                    <canvas id="lineChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h4>Doughnut Chart</h4>
+                    <canvas id="doughnutChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h4>Scatter Plot</h4>
+                    <canvas id="scatterChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h4>Radar Chart</h4>
+                    <canvas id="radarChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h4>Bubble Chart</h4>
+                    <canvas id="bubbleChart"></canvas>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-info">
+                <span>IPMAS - Integrated Poverty Mapping & Analysis System</span>
+                <span>© 2025 | Designed by Mary Wairimu</span>
+            </div>
+            <div class="footer-links">
+                <a href="/">Dashboard</a>
+                <a href="/reports">Reports</a>
+                <a href="/test-charts">Test Charts</a>
+                <a href="/health">Health Check</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Updating Charts...</div>
+    </div>
+
+    <!-- Debug Console -->
+    <div id="debugConsole" class="debug-console" style="display: none;">
+        <div class="debug-header">
+            <h4>Debug Console</h4>
+            <button class="btn btn-sm" id="clearDebugBtn">Clear</button>
+        </div>
+        <div id="debugContent" class="debug-content"></div>
+    </div>
+
+    <script src="data/sample-data.js"></script>
+    <script src="scripts/config.js"></script>
+    <script src="scripts/subscription.js"></script>
+    <script src="scripts/test-charts.js"></script>
+    <script src="scripts/main.js"></script>
+</body>
+</html>

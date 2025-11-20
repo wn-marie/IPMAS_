@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPMAS Map Test</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .status.success {
+            background: #d4edda;
+            border-left-color: #28a745;
+        }
+        .status.error {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+        }
+        .status.warning {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+        }
+        #map {
+            height: 500px;
+            width: 100%;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .controls {
+            margin: 20px 0;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn.success {
+            background: #28a745;
+        }
+        .btn.danger {
+            background: #dc3545;
+        }
+        .info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌍 IPMAS Map Test</h1>
+        
+        <div class="info">
+            <h3>Test Status</h3>
+            <div id="test-status">
+                <div class="status" id="leaflet-status">Checking Leaflet.js...</div>
+                <div class="status" id="map-status">Checking Map Container...</div>
+                <div class="status" id="data-status">Checking Sample Data...</div>
+                <div class="status" id="markers-status">Checking Markers...</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn" onclick="testMap()">Test Map</button>
+            <button class="btn success" onclick="addMarkers()">Add Markers</button>
+            <button class="btn danger" onclick="clearMap()">Clear Map</button>
+            <button class="btn" onclick="showInfo()">Show Info</button>
+        </div>
+
+        <div id="map"></div>
+
+        <div class="info">
+            <h3>Console Output</h3>
+            <div id="console-output" style="background: #f8f9fa; padding: 10px; border-radius: 5px; font-family: monospace; max-height: 200px; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="data/sample-data.js"></script>
+    <script>
+        let map = null;
+        let markers = [];
+
+        // Console logging
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logMessage = `[${timestamp}] ${message}`;
+            console.log(logMessage);
+            
+            const output = document.getElementById('console-output');
+            const div = document.createElement('div');
+            div.textContent = logMessage;
+            div.style.color = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : '#000';
+            output.appendChild(div);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        // Test functions
+        function testLeaflet() {
+            const status = document.getElementById('leaflet-status');
+            if (typeof L !== 'undefined') {
+                status.textContent = `✅ Leaflet.js loaded (v${L.version})`;
+                status.className = 'status success';
+                log('Leaflet.js loaded successfully', 'success');
+                return true;
+            } else {
+                status.textContent = '❌ Leaflet.js not loaded';
+                status.className = 'status error';
+                log('Leaflet.js not loaded', 'error');
+                return false;
+            }
+        }
+
+        function testMapContainer() {
+            const status = document.getElementById('map-status');
+            const mapElement = document.getElementById('map');
+            
+            if (mapElement) {
+                const rect = mapElement.getBoundingClientRect();
+                status.textContent = `✅ Map container found (${rect.width}x${rect.height}px)`;
+                status.className = 'status success';
+                log(`Map container: ${rect.width}x${rect.height}px`, 'success');
+                return true;
+            } else {
+                status.textContent = '❌ Map container not found';
+                status.className = 'status error';
+                log('Map container not found', 'error');
+                return false;
+            }
+        }
+
+        function testSampleData() {
+            const status = document.getElementById('data-status');
+            
+            if (typeof sampleData !== 'undefined' && sampleData.locations) {
+                status.textContent = `✅ Sample data loaded (${sampleData.locations.length} locations)`;
+                status.className = 'status success';
+                log(`Sample data: ${sampleData.locations.length} locations`, 'success');
+                return true;
+            } else {
+                status.textContent = '❌ Sample data not loaded';
+                status.className = 'status error';
+                log('Sample data not loaded', 'error');
+                return false;
+            }
+        }
+
+        function testMap() {
+            log('Testing map initialization...', 'info');
+            
+            try {
+                if (map) {
+                    map.remove();
+                }
+                
+                map = L.map('map').setView([-0.0236, 37.9062], 7);
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+                
+                map.whenReady(() => {
+                    log('Map initialized successfully', 'success');
+                    document.getElementById('markers-status').textContent = '✅ Map ready for markers';
+                    document.getElementById('markers-status').className = 'status success';
+                });
+                
+            } catch (error) {
+                log(`Map initialization failed: ${error.message}`, 'error');
+                console.error('Map error:', error);
+            }
+        }
+
+        function addMarkers() {
+            if (!map) {
+                log('Map not initialized', 'error');
+                return;
+            }
+            
+            if (typeof sampleData === 'undefined') {
+                log('Sample data not available', 'error');
+                return;
+            }
+            
+            log('Adding markers...', 'info');
+            
+            try {
+                // Clear existing markers
+                markers.forEach(marker => map.removeLayer(marker));
+                markers = [];
+                
+                // Add markers for first 10 locations
+                sampleData.locations.slice(0, 10).forEach((location, index) => {
+                    const marker = L.circleMarker([location.lat, location.lng], {
+                        radius: Math.max(5, Math.min(15, location.poverty_index / 5)),
+                        fillColor: getColorForPoverty(location.poverty_index),
+                        color: '#000',
+                        weight: 1,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    }).addTo(map);
+                    
+                    marker.bindPopup(`
+                        <div>
+                            <h3>${location.name}</h3>
+                            <p><strong>County:</strong> ${location.county}</p>
+                            <p><strong>Poverty Index:</strong> ${location.poverty_index}%</p>
+                            <p><strong>Education:</strong> ${location.education_access}%</p>
+                        </div>
+                    `);
+                    
+                    markers.push(marker);
+                });
+                
+                log(`Added ${markers.length} markers`, 'success');
+                
+            } catch (error) {
+                log(`Failed to add markers: ${error.message}`, 'error');
+                console.error('Marker error:', error);
+            }
+        }
+
+        function clearMap() {
+            if (map) {
+                markers.forEach(marker => map.removeLayer(marker));
+                markers = [];
+                log('Map cleared', 'info');
+            }
+        }
+
+        function showInfo() {
+            log('=== System Information ===', 'info');
+            log(`Leaflet: ${typeof L !== 'undefined' ? L.version : 'Not loaded'}`, 'info');
+            log(`Map: ${map ? 'Initialized' : 'Not initialized'}`, 'info');
+            log(`Sample Data: ${typeof sampleData !== 'undefined' ? sampleData.locations.length + ' locations' : 'Not loaded'}`, 'info');
+            log(`Markers: ${markers.length}`, 'info');
+        }
+
+        function getColorForPoverty(povertyIndex) {
+            if (povertyIndex < 30) return '#28a745'; // Green
+            if (povertyIndex < 50) return '#ffc107'; // Yellow
+            if (povertyIndex < 70) return '#fd7e14'; // Orange
+            return '#dc3545'; // Red
+        }
+
+        // Initialize tests
+        document.addEventListener('DOMContentLoaded', function() {
+            log('IPMAS Map Test initialized', 'info');
+            
+            // Run initial tests
+            setTimeout(() => {
+                testLeaflet();
+                testMapContainer();
+                testSampleData();
+            }, 100);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPMAS Map Debug</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .debug-info {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        .success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        #map {
+            height: 400px;
+            width: 100%;
+            border: 2px solid #007bff;
+            margin: 20px 0;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>🌍 IPMAS Map Debug Tool</h1>
+    
+    <div class="debug-info" id="leaflet-status">
+        <h3>Leaflet.js Status</h3>
+        <p id="leaflet-check">Checking...</p>
+    </div>
+    
+    <div class="debug-info" id="map-status">
+        <h3>Map Container Status</h3>
+        <p id="map-check">Checking...</p>
+    </div>
+    
+    <div class="debug-info" id="data-status">
+        <h3>Sample Data Status</h3>
+        <p id="data-check">Checking...</p>
+    </div>
+    
+    <div class="debug-info" id="console-status">
+        <h3>Console Errors</h3>
+        <p id="console-check">Checking...</p>
+    </div>
+    
+    <div>
+        <button class="test-button" onclick="testMapInitialization()">Test Map Initialization</button>
+        <button class="test-button" onclick="testSampleData()">Test Sample Data</button>
+        <button class="test-button" onclick="testMarkers()">Test Markers</button>
+        <button class="test-button" onclick="clearConsole()">Clear Console</button>
+    </div>
+    
+    <div id="map"></div>
+    
+    <div class="debug-info" id="test-results">
+        <h3>Test Results</h3>
+        <div id="test-output"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="data/sample-data.js"></script>
+    <script>
+        let map = null;
+        let testResults = [];
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logMessage = `[${timestamp}] ${message}`;
+            console.log(logMessage);
+            
+            testResults.push({ message: logMessage, type });
+            updateTestOutput();
+        }
+
+        function updateTestOutput() {
+            const output = document.getElementById('test-output');
+            output.innerHTML = testResults.map(result => 
+                `<div class="${result.type}">${result.message}</div>`
+            ).join('');
+        }
+
+        function clearConsole() {
+            testResults = [];
+            updateTestOutput();
+            console.clear();
+        }
+
+        // Check Leaflet.js loading
+        function checkLeaflet() {
+            const status = document.getElementById('leaflet-check');
+            if (typeof L !== 'undefined') {
+                status.innerHTML = '✅ Leaflet.js loaded successfully (v' + L.version + ')';
+                document.getElementById('leaflet-status').className = 'debug-info success';
+                log('Leaflet.js loaded successfully', 'success');
+            } else {
+                status.innerHTML = '❌ Leaflet.js failed to load';
+                document.getElementById('leaflet-status').className = 'debug-info error';
+                log('Leaflet.js failed to load', 'error');
+            }
+        }
+
+        // Check map container
+        function checkMapContainer() {
+            const mapElement = document.getElementById('map');
+            const status = document.getElementById('map-check');
+            
+            if (mapElement) {
+                const rect = mapElement.getBoundingClientRect();
+                status.innerHTML = `✅ Map container found (${rect.width}x${rect.height}px)`;
+                document.getElementById('map-status').className = 'debug-info success';
+                log(`Map container: ${rect.width}x${rect.height}px`, 'success');
+            } else {
+                status.innerHTML = '❌ Map container not found';
+                document.getElementById('map-status').className = 'debug-info error';
+                log('Map container not found', 'error');
+            }
+        }
+
+        // Check sample data
+        function checkSampleData() {
+            const status = document.getElementById('data-check');
+            
+            if (typeof sampleData !== 'undefined' && sampleData.locations) {
+                status.innerHTML = `✅ Sample data loaded (${sampleData.locations.length} locations)`;
+                document.getElementById('data-status').className = 'debug-info success';
+                log(`Sample data: ${sampleData.locations.length} locations`, 'success');
+            } else {
+                status.innerHTML = '❌ Sample data not loaded';
+                document.getElementById('data-status').className = 'debug-info error';
+                log('Sample data not loaded', 'error');
+            }
+        }
+
+        // Test map initialization
+        function testMapInitialization() {
+            log('Testing map initialization...', 'info');
+            
+            try {
+                if (map) {
+                    map.remove();
+                }
+                
+                map = L.map('map').setView([-0.0236, 37.9062], 7);
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+                
+                log('Map initialized successfully', 'success');
+                
+            } catch (error) {
+                log(`Map initialization failed: ${error.message}`, 'error');
+                console.error('Map initialization error:', error);
+            }
+        }
+
+        // Test sample data
+        function testSampleData() {
+            log('Testing sample data...', 'info');
+            
+            if (typeof sampleData === 'undefined') {
+                log('Sample data not available', 'error');
+                return;
+            }
+            
+            log(`Found ${sampleData.locations.length} locations`, 'success');
+            
+            sampleData.locations.slice(0, 3).forEach((location, index) => {
+                log(`Location ${index + 1}: ${location.name} (${location.lat}, ${location.lng})`, 'info');
+            });
+        }
+
+        // Test markers
+        function testMarkers() {
+            log('Testing marker creation...', 'info');
+            
+            if (!map) {
+                log('Map not initialized', 'error');
+                return;
+            }
+            
+            if (typeof sampleData === 'undefined') {
+                log('Sample data not available', 'error');
+                return;
+            }
+            
+            try {
+                // Clear existing markers
+                map.eachLayer(layer => {
+                    if (layer instanceof L.CircleMarker || layer instanceof L.Marker) {
+                        map.removeLayer(layer);
+                    }
+                });
+                
+                // Add test markers
+                sampleData.locations.slice(0, 5).forEach(location => {
+                    const marker = L.circleMarker([location.lat, location.lng], {
+                        radius: 8,
+                        fillColor: '#ff0000',
+                        color: '#000',
+                        weight: 1,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    }).addTo(map);
+                    
+                    marker.bindPopup(`
+                        <div>
+                            <h3>${location.name}</h3>
+                            <p>Poverty Index: ${location.poverty_index}%</p>
+                            <p>Education: ${location.education_access}%</p>
+                        </div>
+                    `);
+                });
+                
+                log('Markers added successfully', 'success');
+                
+            } catch (error) {
+                log(`Marker creation failed: ${error.message}`, 'error');
+                console.error('Marker creation error:', error);
+            }
+        }
+
+        // Initialize debug checks
+        document.addEventListener('DOMContentLoaded', function() {
+            log('Debug tool initialized', 'info');
+            
+            // Run initial checks
+            setTimeout(() => {
+                checkLeaflet();
+                checkMapContainer();
+                checkSampleData();
+            }, 100);
+        });
+
+        // Monitor console errors
+        const originalError = console.error;
+        console.error = function(...args) {
+            log(`Console Error: ${args.join(' ')}`, 'error');
+            originalError.apply(console, args);
+        };
+    </script>
+</body>
+</html>
