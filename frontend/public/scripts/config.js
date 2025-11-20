@@ -4,11 +4,13 @@
  */
 
 // Backend API Configuration
+// Auto-detect environment: use relative URLs in production, localhost in development
+const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
 const API_CONFIG = {
-    // Backend runs on port 3001 (API only)
-    BASE_URL: 'http://localhost:3001',
+    // Backend runs on port 3001 (API only) in development, same origin in production
+    BASE_URL: isProduction ? '' : 'http://localhost:3001',
     // Socket.IO server URL (same as backend)
-    SOCKET_URL: 'http://localhost:3001',
+    SOCKET_URL: isProduction ? window.location.origin : 'http://localhost:3001',
     VERSION: 'v1',
     ENDPOINTS: {
         ANALYTICS: '/api/v1/analytics',

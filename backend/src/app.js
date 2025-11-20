@@ -895,6 +895,27 @@ async function initializeServices() {
     }
 }
 
+// Serve static files from frontend (for production deployment)
+const path = require('path');
+const frontendPath = path.join(__dirname, '../../frontend/public');
+
+// Serve static files (CSS, JS, images, etc.)
+app.use(express.static(frontendPath));
+
+// Serve index.html for all non-API routes (SPA routing)
+app.get('*', (req, res, next) => {
+    // Skip API routes and system endpoints
+    if (req.path.startsWith('/api') || req.path.startsWith('/health') || req.path.startsWith('/metrics') || req.path.startsWith('/status') || req.path.startsWith('/memory')) {
+        return next();
+    }
+    // Serve frontend index.html for all other routes
+    res.sendFile(path.join(frontendPath, 'index.html'), (err) => {
+        if (err) {
+            next();
+        }
+    });
+});
+
 // Error handling middleware (must be last)
 app.use(errorHandler);
 

@@ -1,0 +1,43 @@
+services:
+  # Backend API Service
+  - type: web
+    name: ipmas-backend
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm run install:all && cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # PORT is automatically set by Render, no need to specify
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: 5432
+      - key: DB_NAME
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        value: https://ipmas-backend.onrender.com
+      - key: REDIS_HOST
+        sync: false
+      - key: REDIS_PORT
+        value: 6379
+      - key: REDIS_PASSWORD
+        sync: false
+    healthCheckPath: /health
+
+databases:
+  # PostgreSQL Database
+  - name: ipmas-db
+    databaseName: ipmas_db
+    user: ipmas_user
+    plan: free
+    region: oregon
+
