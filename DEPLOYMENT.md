@@ -2,6 +2,27 @@
 
 This guide will help you deploy IPMAS to Render.com.
 
+## 🎯 Quick Answer: Blueprint vs Web Service
+
+**✅ USE BLUEPRINT** (Recommended)
+
+**Why?**
+- **One-click deployment**: Creates both **Web Service** (backend + frontend) AND **PostgreSQL Database** automatically
+- **Infrastructure as Code**: Everything defined in `render.yaml`
+- **Easier management**: Update everything from one file
+- **No manual setup**: Render handles all the configuration
+
+**What gets deployed:**
+- ✅ **1 Web Service** (`ipmas-backend`) - Serves both backend API and frontend
+- ✅ **1 PostgreSQL Database** (`ipmas-db`) - With PostGIS extension
+
+**You DON'T need:**
+- ❌ Separate frontend service (frontend is served by backend)
+- ❌ Manual database creation (Blueprint creates it)
+- ❌ Manual service linking (Blueprint links them automatically)
+
+---
+
 ## 📋 Prerequisites
 
 1. **GitHub Repository**: Your code should be in a GitHub repository (✅ Already done: https://github.com/wn-marie/IPMAS_.git)
@@ -10,40 +31,84 @@ This guide will help you deploy IPMAS to Render.com.
 
 ## 🎯 Deployment Steps
 
-### Option 1: Using render.yaml (Infrastructure as Code) - Recommended
+### ✅ RECOMMENDED: Use Blueprint (render.yaml) - One-Click Deployment
+
+**Why Blueprint?**
+- Deploys **Backend Web Service** + **PostgreSQL Database** in one step
+- Frontend is served by the backend (monorepo setup)
+- Infrastructure as Code - everything defined in `render.yaml`
+- Easier to manage and update
+
+**Steps:**
 
 1. **Log in to Render Dashboard**
    - Go to [dashboard.render.com](https://dashboard.render.com)
    - Sign in with GitHub
 
 2. **Create New Blueprint**
-   - Click "New" → "Blueprint"
+   - Click **"New"** → **"Blueprint"**
    - Connect your GitHub repository: `wn-marie/IPMAS_`
    - Render will automatically detect `render.yaml`
-   - Click "Apply" to create all services
+   - Click **"Apply"** to create:
+     - ✅ Web Service (backend + frontend)
+     - ✅ PostgreSQL Database (with PostGIS)
 
-3. **Configure Environment Variables**
-   - After services are created, go to your web service settings
-   - Add the following environment variables:
+3. **Wait for Services to be Created**
+   - Render will create both services automatically
+   - Database will be created first
+   - Web service will be created second
+
+4. **Configure Environment Variables**
+   - Go to your **Web Service** settings (not the database)
+   - Click **"Environment"** tab
+   - The following variables are already set in `render.yaml`:
+     - `NODE_ENV=production`
+     - `DB_PORT=5432`
+     - `JWT_SECRET` (auto-generated)
+   - **You need to add these manually:**
      ```
-     DB_HOST=<from-database-internal-host>
-     DB_PORT=5432
+     DB_HOST=<copy-from-database-internal-host>
      DB_NAME=ipmas_db
-     DB_USER=<from-database-credentials>
-     DB_PASSWORD=<from-database-credentials>
-     JWT_SECRET=<generate-a-random-secret>
-     CORS_ORIGIN=https://your-app-name.onrender.com
-     REDIS_HOST=<optional-if-using-redis>
-     REDIS_PORT=6379
-     REDIS_PASSWORD=<optional>
+     DB_USER=<copy-from-database-credentials>
+     DB_PASSWORD=<copy-from-database-credentials>
+     CORS_ORIGIN=https://ipmas-backend.onrender.com
+     ```
+   - **How to get database credentials:**
+     1. Go to your **Database** service in Render dashboard
+     2. Click **"Info"** tab
+     3. Copy:
+        - **Internal Database URL** → Use this for `DB_HOST`
+        - **Database** → Use for `DB_NAME`
+        - **User** → Use for `DB_USER`
+        - **Password** → Use for `DB_PASSWORD`
+     - Or use the **Internal Database URL** format:
+       ```
+       postgres://user:password@host:port/database
+       ```
+
+5. **Enable PostGIS Extension**
+   - Go to your **Database** service
+   - Click **"Connect"** → **"psql"** (or use external client)
+   - Run these commands:
+     ```sql
+     CREATE EXTENSION postgis;
+     CREATE EXTENSION postgis_topology;
+     ```
+   - Verify:
+     ```sql
+     SELECT PostGIS_version();
      ```
 
-4. **Deploy**
+6. **Deploy**
    - Render will automatically build and deploy
    - Monitor the build logs in the Render dashboard
-   - Your app will be available at: `https://your-app-name.onrender.com`
+   - Your app will be available at: `https://ipmas-backend.onrender.com`
 
-### Option 2: Manual Setup (Alternative)
+### ⚠️ Alternative: Manual Setup (Not Recommended)
+
+**Use this only if Blueprint doesn't work for you.**
+
+This requires creating services manually:
 
 1. **Create PostgreSQL Database**
    - Click "New" → "PostgreSQL"
@@ -55,27 +120,74 @@ This guide will help you deploy IPMAS to Render.com.
    - Click "Create Database"
    - **Save the connection details** (Internal Database URL)
 
-2. **Create Web Service**
-   - Click "New" → "Web Service"
+2. **Enable PostGIS Extension**
+   - Go to your database → **"Connect"** → **"psql"**
+   - Run:
+     ```sql
+     CREATE EXTENSION postgis;
+     CREATE EXTENSION postgis_topology;
+     ```
+
+3. **Create Web Service** (This serves both frontend and backend)
+   - Click **"New"** → **"Web Service"**
    - Connect repository: `wn-marie/IPMAS_`
    - Select branch: `main`
    - Name: `ipmas-backend`
    - Region: Same as database
-   - Branch: `main`
-   - Root Directory: (leave empty)
    - Environment: `Node`
-   - Build Command: `npm run install:all && cd backend && npm install`
+   - Build Command: `npm run install:all && cd frontend && npm run build && cd ../backend && npm install`
    - Start Command: `cd backend && npm start`
    - Plan: Free (or paid for production)
 
-3. **Add Environment Variables**
-   - In the web service settings, go to "Environment"
-   - Add all variables from the list above
+4. **Add Environment Variables**
+   - In the web service settings, go to **"Environment"**
+   - Add all variables (see list below)
    - Use the Internal Database URL from step 1
 
-4. **Deploy**
-   - Click "Create Web Service"
+5. **Deploy**
+   - Click **"Create Web Service"**
    - Render will build and deploy automatically
+
+## 📦 What Gets Deployed
+
+### Monorepo Structure
+Your IPMAS repository contains:
+- **Frontend**: Static files in `frontend/public/` → built to `frontend/dist/`
+- **Backend**: Node.js/Express API in `backend/`
+- **Database**: PostgreSQL with PostGIS (created by Render)
+
+### Deployment Architecture
+```
+┌─────────────────────────────────────┐
+│   Render Web Service                │
+│   (ipmas-backend)                   │
+│                                     │
+│   ┌──────────────┐                 │
+│   │   Backend     │                 │
+│   │   (Express)   │                 │
+│   └──────┬───────┘                  │
+│          │                          │
+│          ├── Serves API: /api/*    │
+│          │                          │
+│          └── Serves Frontend: /*   │
+│             (from frontend/dist/)   │
+└──────────────┬──────────────────────┘
+               │
+               │ Connects to
+               ▼
+┌─────────────────────────────────────┐
+│   Render PostgreSQL Database        │
+│   (ipmas-db)                        │
+│   - Database: ipmas_db              │
+│   - Extensions: PostGIS, PostGIS    │
+│     Topology                        │
+└─────────────────────────────────────┘
+```
+
+**Important:** You only need **ONE Web Service** because:
+- Backend serves the frontend (monorepo setup)
+- No separate frontend deployment needed
+- Everything runs on one service
 
 ## 🔧 Configuration Details
 
@@ -96,6 +208,7 @@ The backend automatically:
 - Serves the built frontend from `frontend/dist/` (if exists)
 - Falls back to `frontend/public/` for development
 - Listens on `process.env.PORT` (automatically set by Render)
+- Handles both API routes (`/api/*`) and frontend routes (`/*`)
 
 ### Environment Variables Required
 
@@ -207,9 +320,24 @@ After deployment, you need to:
 
 ## ✅ Deployment Checklist
 
+### Using Blueprint (Recommended)
+- [ ] Repository pushed to GitHub with `render.yaml`
+- [ ] Render account created
+- [ ] Blueprint created (creates both web service + database)
+- [ ] Environment variables configured in web service
+- [ ] PostGIS extension enabled in database
+- [ ] Build successful (check logs)
+- [ ] Health check passing (`/health` endpoint)
+- [ ] Frontend accessible (root URL)
+- [ ] API endpoints working (`/api/v1/*`)
+- [ ] Database seeded (optional: run `seed-locations.js`)
+- [ ] Auto-deploy enabled (optional: in service settings)
+
+### Using Manual Setup
 - [ ] Repository pushed to GitHub
 - [ ] Render account created
-- [ ] Database created and PostGIS enabled
+- [ ] PostgreSQL database created
+- [ ] PostGIS extension enabled
 - [ ] Web service created
 - [ ] Environment variables configured
 - [ ] Build successful
