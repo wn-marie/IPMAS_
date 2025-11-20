@@ -81,13 +81,21 @@ This guide will help you deploy IPMAS to Render.com.
 
 ### Build Command
 ```bash
-npm run install:all && cd backend && npm install
+npm run install:all && cd frontend && npm run build && cd ../backend && npm install
 ```
+This command:
+1. Installs all dependencies (root, backend, frontend)
+2. Builds the frontend (outputs to `frontend/dist/`)
+3. Installs backend dependencies
 
 ### Start Command
 ```bash
 cd backend && npm start
 ```
+The backend automatically:
+- Serves the built frontend from `frontend/dist/` (if exists)
+- Falls back to `frontend/public/` for development
+- Listens on `process.env.PORT` (automatically set by Render)
 
 ### Environment Variables Required
 

@@ -897,7 +897,11 @@ async function initializeServices() {
 
 // Serve static files from frontend (for production deployment)
 const path = require('path');
-const frontendPath = path.join(__dirname, '../../frontend/public');
+// Use dist/ folder if it exists (production build), otherwise use public/ (development)
+const frontendDistPath = path.join(__dirname, '../../frontend/dist');
+const frontendPublicPath = path.join(__dirname, '../../frontend/public');
+const fs = require('fs');
+const frontendPath = fs.existsSync(frontendDistPath) ? frontendDistPath : frontendPublicPath;
 
 // Serve static files (CSS, JS, images, etc.)
 app.use(express.static(frontendPath));

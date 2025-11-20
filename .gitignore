@@ -74,6 +74,9 @@ coverage/
 dist/
 build/
 *.tsbuildinfo
+# Frontend build output
+frontend/dist/
+frontend/build/
 
 # Temporary files
 tmp/
