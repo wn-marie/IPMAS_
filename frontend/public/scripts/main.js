@@ -3092,12 +3092,27 @@ class IPMASApp {
                 this.userLocationMarker.setPopupContent(popupContent);
                 this.userLocationMarker.openPopup();
                 
-                // Attach event listener after popup is opened
+                // Ensure popup is scrollable and button is visible
                 setTimeout(() => {
                     const popupElement = this.userLocationMarker.getPopup().getElement();
                     if (popupElement) {
+                        // Ensure popup wrapper allows scrolling
+                        const wrapper = popupElement.querySelector('.leaflet-popup-content-wrapper');
+                        if (wrapper) {
+                            wrapper.style.maxHeight = '70vh';
+                            wrapper.style.overflowY = 'auto';
+                            wrapper.style.overflowX = 'hidden';
+                        }
+                        
+                        // Ensure button is visible
                         const reportBtn = popupElement.querySelector('.view-full-report-btn');
                         if (reportBtn) {
+                            reportBtn.style.display = 'inline-block';
+                            reportBtn.style.visibility = 'visible';
+                            reportBtn.style.opacity = '1';
+                            reportBtn.style.position = 'relative';
+                            reportBtn.style.zIndex = '10';
+                            
                             reportBtn.addEventListener('click', (e) => {
                                 e.preventDefault();
                                 const locationDataStr = reportBtn.getAttribute('data-location');
@@ -3120,9 +3135,16 @@ class IPMASApp {
                                 }
                                 return false;
                             });
+                            
+                            // Scroll to button if it's not visible
+                            const rect = reportBtn.getBoundingClientRect();
+                            const wrapperRect = wrapper ? wrapper.getBoundingClientRect() : null;
+                            if (wrapperRect && (rect.bottom > wrapperRect.bottom || rect.top < wrapperRect.top)) {
+                                reportBtn.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                            }
                         }
                     }
-                }, 100);
+                }, 150);
             }
             
         } catch (error) {

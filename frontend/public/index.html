@@ -2008,6 +2008,18 @@
             box-sizing: border-box;
             word-wrap: break-word;
             overflow-wrap: break-word;
+            /* Ensure button is always accessible */
+            min-height: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Ensure View Full Report button is always visible */
+        .poverty-popup .view-full-report-btn {
+            margin-top: auto !important;
+            position: relative !important;
+            z-index: 10 !important;
+            flex-shrink: 0 !important;
         }
         
         .poverty-popup h3 {
@@ -2104,6 +2116,21 @@
             box-sizing: border-box;
             /* Ensure content can scroll */
             overflow: visible;
+            /* Ensure buttons at bottom are accessible */
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        
+        /* Ensure buttons are always visible and accessible */
+        .leaflet-popup-content .view-full-report-btn,
+        .leaflet-popup-content .show-breakdown-btn {
+            margin-top: auto !important;
+            position: relative !important;
+            z-index: 10 !important;
+            flex-shrink: 0 !important;
+            visibility: visible !important;
+            opacity: 1 !important;
         }
         
         .leaflet-popup-content * {
