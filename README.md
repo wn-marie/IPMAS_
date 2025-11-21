@@ -23,12 +23,23 @@ pip install -r requirements.txt
 cp backend/env backend/.env
 # Edit backend/.env with your database credentials
 
+# Build frontend (required before first start)
+cd frontend && npm run build && cd ..
+
 # Start the application
-npm start
+# Option 1: Start both (recommended for development)
+npm run dev
+
+# Option 2: Start separately
+# Terminal 1: Backend
+npm run start:backend
+
+# Terminal 2: Frontend  
+npm run start:frontend
 
 # Access
-# Frontend: http://localhost:3000
-# Backend API: http://localhost:3001
+# Frontend: http://localhost:3000 (or http://YOUR_IP:3000 for network access)
+# Backend API: http://localhost:3001 (or http://YOUR_IP:3001 for network access)
 ```
 
 > **Detailed Setup**: See [Installation Guide](#installation) below or [Backend README](backend/README.md) for database setup.

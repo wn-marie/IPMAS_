@@ -4,6 +4,7 @@
   "description": "IPMAS Frontend - Integrated Poverty Mapping & Analysis System",
   "main": "src/index.html",
   "scripts": {
+    "prestart": "node -e \"const fs=require('fs'); if(!fs.existsSync('dist')){console.log('Building frontend...'); require('child_process').execSync('npm run build', {stdio:'inherit'})}\"",
     "start": "http-server dist -p 3000 -a 0.0.0.0 -c-1",
     "dev": "http-server public -p 3000 -a 0.0.0.0 -c-1 --cors",
     "build": "node build.js",
