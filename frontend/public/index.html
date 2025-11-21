@@ -2144,11 +2144,30 @@
             width: auto !important;
             /* Enable scrolling for custom popups on all devices */
             max-height: 70vh; /* Desktop-friendly height */
-            overflow-y: auto;
-            overflow-x: hidden;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
             -webkit-overflow-scrolling: touch;
             touch-action: pan-y;
             scroll-behavior: smooth;
+            /* Ensure content is not clipped */
+            position: relative;
+            padding-bottom: 0;
+        }
+        
+        /* Ensure button container is visible */
+        .custom-popup .poverty-popup {
+            padding-bottom: 12px !important;
+            min-height: auto;
+        }
+        
+        /* Force button visibility */
+        .custom-popup .view-full-report-btn {
+            display: inline-block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            position: relative !important;
+            z-index: 10 !important;
+            margin-top: 8px !important;
         }
         
         /* Custom scrollbar for custom popups */

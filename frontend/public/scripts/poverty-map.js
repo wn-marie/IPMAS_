@@ -671,6 +671,14 @@ class PovertyMapSystem {
                                 📊 Calculation Breakdown
                             </button>
                         ` : ''}
+                        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #ddd;">
+                            <a href="/area-report.html" 
+                               class="view-full-report-btn" 
+                               data-location='${JSON.stringify(location).replace(/'/g, "&#39;")}'
+                               style="display: inline-block; padding: 8px 16px; background: var(--primary-color); color: white; text-decoration: none; border-radius: 4px; font-size: 0.9rem; font-weight: 600; text-align: center; width: 100%; box-sizing: border-box; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; line-height: 1.4; cursor: pointer; margin-top: 8px;">
+                                📄 View Full Detailed Report
+                            </a>
+                        </div>
                     </div>
                 `, { 
                     maxWidth: 300,
@@ -1026,10 +1034,21 @@ class PovertyMapSystem {
                             </button>
                         </div>
                         <div id="ml-result-${location.id || 'default'}" style="margin-top: 10px;"></div>
+                        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #ddd;">
+                            <a href="/area-report.html" 
+                               class="view-full-report-btn" 
+                               data-location='${JSON.stringify(location).replace(/'/g, "&#39;")}'
+                               style="display: inline-block; padding: 8px 16px; background: var(--primary-color); color: white; text-decoration: none; border-radius: 4px; font-size: 0.9rem; font-weight: 600; text-align: center; width: 100%; box-sizing: border-box; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; line-height: 1.4; cursor: pointer; margin-top: 8px;">
+                                📄 View Full Detailed Report
+                            </a>
+                        </div>
                     </div>
                 `;
                 
-                circle.bindPopup(popupContent);
+                circle.bindPopup(popupContent, { 
+                    maxWidth: 300,
+                    className: 'custom-popup'
+                });
                 
                 this.hotspotLayers.push(circle);
             });
