@@ -2192,7 +2192,19 @@
         .custom-popup .leaflet-popup-content {
             width: auto !important;
             max-width: 100% !important;
-            overflow: visible;
+            overflow: visible !important;
+            /* Ensure content is not clipped */
+            padding-bottom: 8px !important;
+            margin-bottom: 0 !important;
+        }
+        
+        /* Prevent Leaflet from clipping popup content */
+        .custom-popup .leaflet-popup-content-wrapper {
+            overflow: visible !important;
+        }
+        
+        .custom-popup .leaflet-popup-content-wrapper > * {
+            overflow: visible !important;
         }
         
         /* Map Container - No spacing above */
