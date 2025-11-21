@@ -1,5 +1,22 @@
 # 🌍 IPMAS - Integrated Poverty Mapping & Analysis System
 
+<div align="center">
+
+<h2 style="color: #ff0000; background-color: #fff3cd; padding: 15px; border: 3px solid #ff0000; border-radius: 8px; font-weight: bold;">
+
+⚠️ **IMPORTANT NOTICE: FOR THIS SYSTEM APPLICATION TO WORK EFFECTIVELY, ENSURE TO CLEAR BROWSING DATA / CACHE** ⚠️
+
+</h2>
+
+</div>
+
+> **🔧 CLEAR CACHE INSTRUCTIONS:**
+> - **Chrome/Edge**: Press `Ctrl+Shift+Delete` (Windows) or `Cmd+Shift+Delete` (Mac)
+> - **Firefox**: Press `Ctrl+Shift+Delete` (Windows) or `Cmd+Shift+Delete` (Mac)
+> - **Safari**: Press `Cmd+Option+E`
+> - Or use **Hard Refresh**: `Ctrl+Shift+R` (Windows) or `Cmd+Shift+R` (Mac)
+> - **📱 Mobile**: Clear cache in browser settings or use incognito/private mode
+
 [Pitch Deck](https://www.canva.com/design/DAG4hiBJ_4I/HBYqz1_TlzY2ftYP1l8hAQ/edit)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
