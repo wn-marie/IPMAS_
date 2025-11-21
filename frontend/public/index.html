@@ -2168,6 +2168,26 @@
             position: relative !important;
             z-index: 10 !important;
             margin-top: 8px !important;
+            margin-bottom: 8px !important;
+        }
+        
+        /* Ensure popup wrapper doesn't clip content */
+        .custom-popup .leaflet-popup-content-wrapper {
+            min-height: auto !important;
+        }
+        
+        /* Ensure poverty-popup container shows all content */
+        .custom-popup .poverty-popup {
+            min-height: auto !important;
+            max-height: none !important;
+            overflow: visible !important;
+            padding-bottom: 12px !important;
+        }
+        
+        /* Override any Leaflet clipping */
+        .leaflet-popup-content-wrapper {
+            clip: unset !important;
+            clip-path: none !important;
         }
         
         /* Custom scrollbar for custom popups */
