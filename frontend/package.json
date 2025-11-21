@@ -4,8 +4,8 @@
   "description": "IPMAS Frontend - Integrated Poverty Mapping & Analysis System",
   "main": "src/index.html",
   "scripts": {
-    "start": "http-server dist -p 3000 -c-1",
-    "dev": "http-server public -p 3000 -c-1 --cors",
+    "start": "http-server dist -p 3000 -a 0.0.0.0 -c-1",
+    "dev": "http-server public -p 3000 -a 0.0.0.0 -c-1 --cors",
     "build": "node build.js",
     "build:webpack": "webpack --mode production",
     "build:dev": "webpack --mode development",

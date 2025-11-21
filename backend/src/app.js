@@ -968,13 +968,29 @@ app.use((req, res) => {
 // Start server only if not in test mode
 if (process.env.NODE_ENV !== 'test') {
     const PORT = process.env.PORT || 3001;
-    server.listen(PORT, async () => {
-        console.log(`🌍 IPMAS API Server starting on port ${PORT}`);
+    const HOST = process.env.HOST || '0.0.0.0'; // Listen on all interfaces for network access
+    
+    server.listen(PORT, HOST, async () => {
+        console.log(`🌍 IPMAS API Server starting on ${HOST}:${PORT}`);
         console.log(`🔗 API Endpoint: http://localhost:${PORT}/api/v1`);
         console.log(`📋 API Info: http://localhost:${PORT}/`);
         console.log(`🏥 Health Check: http://localhost:${PORT}/health`);
         console.log(`📊 Metrics: http://localhost:${PORT}/metrics`);
         console.log(`📈 System Status: http://localhost:${PORT}/status`);
+        
+        // Log network access URLs if not localhost
+        if (HOST === '0.0.0.0') {
+            const os = require('os');
+            const networkInterfaces = os.networkInterfaces();
+            console.log('\n🌐 Network Access URLs:');
+            Object.keys(networkInterfaces).forEach((interfaceName) => {
+                networkInterfaces[interfaceName].forEach((iface) => {
+                    if (iface.family === 'IPv4' && !iface.internal) {
+                        console.log(`   http://${iface.address}:${PORT}`);
+                    }
+                });
+            });
+        }
         
         await initializeServices();
         console.log('✅ IPMAS API is ready!');
