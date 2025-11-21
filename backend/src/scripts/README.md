@@ -6,6 +6,57 @@ Scripts for database seeding, maintenance, and data management.
 
 ## 📋 Available Scripts
 
+### `enable-postgis.js`
+**Purpose**: Enable PostGIS and PostGIS Topology extensions in PostgreSQL database
+
+**Usage**:
+```bash
+# From project root
+node backend/src/scripts/enable-postgis.js
+
+# Or from backend directory
+cd backend
+node src/scripts/enable-postgis.js
+```
+
+**What it does**:
+- Connects to PostgreSQL database using environment variables
+- Creates PostGIS extension if not exists
+- Creates PostGIS Topology extension if not exists
+- Verifies installation and displays version
+
+**When to run**:
+- After creating a new database on Render
+- If PostGIS extensions are missing
+- As part of initial database setup
+
+**Environment Variables Required**:
+- `DATABASE_URL` OR
+- `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`
+
+**Example Output**:
+```
+🔌 Connecting to database...
+✅ Connected to database
+
+📦 Enabling PostGIS extension...
+✅ PostGIS extension enabled
+📦 Enabling PostGIS Topology extension...
+✅ PostGIS Topology extension enabled
+
+🔍 Verifying PostGIS installation...
+✅ PostGIS version: 3.4.0 USE_GEOS=1 USE_PROJ=1
+
+📋 Installed PostGIS extensions:
+   - postgis: 3.4.0
+   - postgis_topology: 3.4.0
+
+✅ PostGIS setup complete!
+🎉 Your database is ready for geospatial operations.
+```
+
+---
+
 ### `seed-locations.js`
 
 Seeds the database with named locations from `frontend/public/data/sample-data.js`.

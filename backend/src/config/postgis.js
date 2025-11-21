@@ -52,8 +52,9 @@ class DatabaseService {
             await client.query('SELECT NOW()');
             client.release();
 
-            // Initialize PostGIS extension
+            // Initialize PostGIS extensions
             await this.pool.query('CREATE EXTENSION IF NOT EXISTS postgis;');
+            await this.pool.query('CREATE EXTENSION IF NOT EXISTS postgis_topology;');
             
             // Create tables if they don't exist
             await this.createTables();

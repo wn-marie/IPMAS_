@@ -87,17 +87,33 @@ This guide will help you deploy IPMAS to Render.com.
        ```
 
 5. **Enable PostGIS Extension**
-   - Go to your **Database** service
+
+   **Option A: Using the Script (Recommended)**
+   - After deployment, run the PostGIS setup script:
+     ```bash
+     # From your local machine (with database credentials in .env)
+     node backend/src/scripts/enable-postgis.js
+     ```
+   - Or via Render Shell (if available):
+     ```bash
+     cd backend
+     node src/scripts/enable-postgis.js
+     ```
+
+   **Option B: Using psql (Alternative)**
+   - Go to your **Database** service in Render dashboard
    - Click **"Connect"** → **"psql"** (or use external client)
    - Run these commands:
      ```sql
-     CREATE EXTENSION postgis;
-     CREATE EXTENSION postgis_topology;
+     CREATE EXTENSION IF NOT EXISTS postgis;
+     CREATE EXTENSION IF NOT EXISTS postgis_topology;
      ```
    - Verify:
      ```sql
      SELECT PostGIS_version();
      ```
+
+   **Note**: The backend will automatically try to enable PostGIS on startup, but running this script ensures it's enabled correctly.
 
 6. **Deploy**
    - Render will automatically build and deploy
