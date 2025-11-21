@@ -623,7 +623,7 @@ class PovertyMapSystem {
                         <p><strong>Level:</strong> ${level.level}</p>
                         ${location.confidence ? `<p><strong>Confidence:</strong> ${location.confidence}%</p>` : ''}
                         ${location.calculation_breakdown ? `
-                            <button onclick="showLocationBreakdown(${JSON.stringify(location).replace(/"/g, '&quot;')})" 
+                            <button class="show-breakdown-btn" data-location='${JSON.stringify(location).replace(/'/g, "&#39;")}' 
                                     style="background: var(--primary-color); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-top: 12px; width: 100%; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px;">
                                 📊 Calculation Breakdown
                             </button>
@@ -2136,8 +2136,10 @@ function generateLocationBreakdownHTML(location) {
         </div>
 
         <div class="breakdown-section" style="margin-top: 20px; padding-top: 20px; border-top: 2px solid var(--border-color);">
-            <a href="/area-report.html" onclick="event.preventDefault(); openFullReport(${JSON.stringify(location).replace(/"/g, '&quot;')}); return false;" 
-               style="display: inline-block; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center; width: 100%; margin-top: 15px;">
+            <a href="/area-report.html" 
+               class="view-full-report-btn" 
+               data-location='${JSON.stringify(location).replace(/'/g, "&#39;")}'
+               style="display: inline-block; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center; width: 100%; margin-top: 15px; cursor: pointer;">
                 📄 View Full Detailed Report
             </a>
             <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 8px; text-align: center;">

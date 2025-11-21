@@ -13,7 +13,7 @@
     <!-- Trial Banner -->
     <div class="trial-banner" id="trialBanner">
         <a href="#" id="trialBannerLink">Upgrade to Premium</a>
-        <span class="close" onclick="this.parentElement.style.display='none'">&times;</span>
+        <span class="close" id="trialBannerClose">&times;</span>
     </div>
 
     <!-- Header -->
@@ -29,24 +29,24 @@
                 </div>
                 <nav class="nav">
                 <div class="nav-dropdown-container">
-                    <button class="nav-menu-btn" onclick="toggleNavDropdown()">
+                    <button class="nav-menu-btn" id="navMenuBtn">
                         <span class="nav-menu-icon">☰</span>
                         <span class="nav-menu-text">Menu</span>
                     </button>
                     <div class="nav-dropdown" id="navDropdown">
-                        <a href="/" class="nav-dropdown-item" onclick="closeNavDropdown()">
+                        <a href="/" class="nav-dropdown-item" data-close-nav>
                             <span class="nav-item-icon"></span>
                             <span>Dashboard</span>
                         </a>
-                        <a href="/poverty-models.html" class="nav-dropdown-item" onclick="closeNavDropdown()">
+                        <a href="/poverty-models.html" class="nav-dropdown-item" data-close-nav>
                             <span class="nav-item-icon"></span>
                             <span>Poverty Models</span>
                         </a>
-                        <a href="/projects.html" class="nav-dropdown-item" onclick="closeNavDropdown()">
+                        <a href="/projects.html" class="nav-dropdown-item" data-close-nav>
                             <span class="nav-item-icon"></span>
                             <span>Development Projects</span>
                         </a>
-                        <a href="/feedback.html" class="nav-dropdown-item" onclick="closeNavDropdown()">
+                        <a href="/feedback.html" class="nav-dropdown-item" data-close-nav>
                             <span class="nav-item-icon">💬</span>
                             <span>Feedback & Support</span>
                         </a>
@@ -56,10 +56,10 @@
                         <div class="nav-dropdown-item map-controls-section" style="flex-direction: column; align-items: flex-start; gap: 8px;">
                             <strong style="font-size: 0.85rem; color: var(--primary-color);">Interactive Poverty Map</strong>
                             <div style="display: flex; gap: 8px; width: 100%;">
-                                <button class="btn btn-sm btn-secondary" onclick="resetMapView(); closeNavDropdown();" style="flex: 1; padding: 8px;">
+                                <button class="btn btn-sm btn-secondary" id="resetMapViewBtn" style="flex: 1; padding: 8px;">
                                     Reset View
                                 </button>
-                                <button class="btn btn-sm btn-secondary" onclick="toggleMapLayers(); closeNavDropdown();" style="flex: 1; padding: 8px;">
+                                <button class="btn btn-sm btn-secondary" id="toggleMapLayersBtn" style="flex: 1; padding: 8px;">
                                     Toggle Layers
                                 </button>
                             </div>
@@ -72,13 +72,13 @@
                 <div class="user-panel">
                     <div class="user-avatar" id="userAvatar">Sign up</div>
                     <div class="user-dropdown" id="userDropdown">
-                        <div class="user-dropdown-item" onclick="goToSettings()">Settings</div>
-                        <div class="user-dropdown-item" onclick="viewHistory()">History</div>
-                        <div class="user-dropdown-item" onclick="window.location.href='/feedback.html'">Feedback</div>
-                        <div class="user-dropdown-item" onclick="logout()">Logout</div>
+                        <div class="user-dropdown-item" data-action="settings">Settings</div>
+                        <div class="user-dropdown-item" data-action="history">History</div>
+                        <div class="user-dropdown-item" data-action="feedback">Feedback</div>
+                        <div class="user-dropdown-item" data-action="logout">Logout</div>
                     </div>
                 </div>
-                <button class="btn btn-primary" onclick="goToSettings()">⚙️</button>
+                <button class="btn btn-primary" id="settingsBtn">⚙️</button>
             </div>
         </div>
     </header>
@@ -3414,6 +3414,92 @@
         
         // Listen for subscription updates
         document.addEventListener('subscriptionUpdated', updateDashboardAccountStatus);
+    </script>
+    
+    <!-- Event Listeners for CSP Compliance -->
+    <script>
+        // Fix inline event handlers for CSP compliance
+        document.addEventListener('DOMContentLoaded', function() {
+            // Trial banner close button
+            const trialBannerClose = document.getElementById('trialBannerClose');
+            if (trialBannerClose) {
+                trialBannerClose.addEventListener('click', function() {
+                    const banner = document.getElementById('trialBanner');
+                    if (banner) banner.style.display = 'none';
+                });
+            }
+            
+            // Navigation menu toggle
+            const navMenuBtn = document.getElementById('navMenuBtn');
+            if (navMenuBtn) {
+                navMenuBtn.addEventListener('click', function() {
+                    if (typeof toggleNavDropdown === 'function') {
+                        toggleNavDropdown();
+                    }
+                });
+            }
+            
+            // Close nav dropdown on link click
+            document.querySelectorAll('[data-close-nav]').forEach(link => {
+                link.addEventListener('click', function() {
+                    if (typeof closeNavDropdown === 'function') {
+                        closeNavDropdown();
+                    }
+                });
+            });
+            
+            // Reset map view button
+            const resetMapViewBtn = document.getElementById('resetMapViewBtn');
+            if (resetMapViewBtn) {
+                resetMapViewBtn.addEventListener('click', function() {
+                    if (typeof resetMapView === 'function') {
+                        resetMapView();
+                    }
+                    if (typeof closeNavDropdown === 'function') {
+                        closeNavDropdown();
+                    }
+                });
+            }
+            
+            // Toggle map layers button
+            const toggleMapLayersBtn = document.getElementById('toggleMapLayersBtn');
+            if (toggleMapLayersBtn) {
+                toggleMapLayersBtn.addEventListener('click', function() {
+                    if (typeof toggleMapLayers === 'function') {
+                        toggleMapLayers();
+                    }
+                    if (typeof closeNavDropdown === 'function') {
+                        closeNavDropdown();
+                    }
+                });
+            }
+            
+            // User dropdown actions
+            document.querySelectorAll('[data-action]').forEach(item => {
+                item.addEventListener('click', function() {
+                    const action = this.getAttribute('data-action');
+                    if (action === 'settings' && typeof goToSettings === 'function') {
+                        goToSettings();
+                    } else if (action === 'history' && typeof viewHistory === 'function') {
+                        viewHistory();
+                    } else if (action === 'feedback') {
+                        window.location.href = '/feedback.html';
+                    } else if (action === 'logout' && typeof logout === 'function') {
+                        logout();
+                    }
+                });
+            });
+            
+            // Settings button
+            const settingsBtn = document.getElementById('settingsBtn');
+            if (settingsBtn) {
+                settingsBtn.addEventListener('click', function() {
+                    if (typeof goToSettings === 'function') {
+                        goToSettings();
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>

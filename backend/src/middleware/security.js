@@ -50,8 +50,10 @@ const corsOptions = {
             'http://localhost:3000',
             'http://localhost:3001',
             'https://ipmas.kenya.gov',
-            'https://www.ipmas.kenya.gov'
-        ];
+            'https://www.ipmas.kenya.gov',
+            'https://ipmas-backend.onrender.com',
+            process.env.CORS_ORIGIN || 'https://ipmas-backend.onrender.com'
+        ].filter(Boolean); // Remove any undefined values
         
         // In development/non-production, allow local network IPs and localhost with any port
         if (process.env.NODE_ENV !== 'production') {
@@ -93,9 +95,10 @@ const helmetMiddleware = helmet({
             defaultSrc: ["'self'"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://unpkg.com"],
             fontSrc: ["'self'", "https://fonts.gstatic.com"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://unpkg.com"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-hashes'", "https://cdn.jsdelivr.net", "https://unpkg.com", "https://cdn.socket.io"],
+            scriptSrcAttr: ["'unsafe-inline'"],
             imgSrc: ["'self'", "data:", "https:"],
-            connectSrc: ["'self'", "ws:", "wss:", "https://unpkg.com", "https://nominatim.openstreetmap.org", "https://cdn.jsdelivr.net"],
+            connectSrc: ["'self'", "ws:", "wss:", "https://unpkg.com", "https://nominatim.openstreetmap.org", "https://cdn.jsdelivr.net", "https://cdn.socket.io", "https://ipmas-backend.onrender.com"],
             frameSrc: ["'none'"],
             objectSrc: ["'none'"],
             upgradeInsecureRequests: []

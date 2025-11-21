@@ -206,7 +206,18 @@ router.get('/poverty/all', async (req, res) => {
         
         if (!allPovertyData || allPovertyData.length === 0) {
             // Return sample data if no database data available
-            const sampleData = require('../../frontend/public/data/sample-data');
+            let sampleData = null;
+            try {
+                const sampleDataPath = require('path').join(__dirname, '../../frontend/public/data/sample-data-enhanced.js');
+                // Try to load sample data, but don't fail if it doesn't exist
+                if (require('fs').existsSync(sampleDataPath.replace('.js', '.js'))) {
+                    delete require.cache[require.resolve('../../frontend/public/data/sample-data-enhanced')];
+                    sampleData = require('../../frontend/public/data/sample-data-enhanced');
+                }
+            } catch (err) {
+                console.log('Sample data not available, returning empty result');
+            }
+            
             if (sampleData && sampleData.locations) {
                 const geoJsonData = {
                     type: "FeatureCollection",

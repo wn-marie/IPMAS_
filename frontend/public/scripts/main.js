@@ -3074,8 +3074,9 @@ class IPMASApp {
                     
                     <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #ddd;">
                         <a href="/area-report.html" 
-                           onclick="event.preventDefault(); if (typeof openFullReport === 'function') { openFullReport(${JSON.stringify(locationData).replace(/"/g, '&quot;')}); } else { var data = ${JSON.stringify(locationData).replace(/"/g, '&quot;')}; if (typeof data === 'string') data = JSON.parse(data); var activeLayers = (typeof getActiveLayersForDashboard === 'function') ? getActiveLayersForDashboard() : (typeof getActiveLayers === 'function' ? getActiveLayers() : ['poverty_index']); data._activeLayers = activeLayers; sessionStorage.setItem('areaReportData', JSON.stringify(data)); window.location.href='/area-report.html'; } return false;" 
-                           style="display: inline-block; padding: 8px 16px; background: var(--primary-color); color: white; text-decoration: none; border-radius: 4px; font-size: 0.9rem; font-weight: 600; text-align: center; width: 100%; box-sizing: border-box; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; line-height: 1.4;">
+                           class="view-full-report-btn" 
+                           data-location='${JSON.stringify(locationData).replace(/'/g, "&#39;")}'
+                           style="display: inline-block; padding: 8px 16px; background: var(--primary-color); color: white; text-decoration: none; border-radius: 4px; font-size: 0.9rem; font-weight: 600; text-align: center; width: 100%; box-sizing: border-box; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; line-height: 1.4; cursor: pointer;">
                             📄 View Full Report
                         </a>
                     </div>
