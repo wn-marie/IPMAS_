@@ -3,40 +3,19 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   mode: process.env.NODE_ENV || 'production',
-  entry: './public/index.html', // Entry point for webpack
+  // Use a dummy entry point since we're just copying files
+  entry: path.resolve(__dirname, 'public/scripts/main.js'),
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'bundle.js',
+    filename: 'scripts/bundle.js',
     clean: true, // Clean output directory before emit
   },
-  // Since we're just copying static files, minimal processing
+  // Minimal processing - we're mainly copying files
   module: {
-    rules: [
-      {
-        test: /\.html$/,
-        type: 'asset/resource',
-        generator: {
-          filename: '[name][ext]',
-        },
-      },
-      {
-        test: /\.css$/,
-        type: 'asset/resource',
-        generator: {
-          filename: 'styles/[name][ext]',
-        },
-      },
-      {
-        test: /\.(png|jpg|jpeg|gif|svg|ico)$/,
-        type: 'asset/resource',
-        generator: {
-          filename: 'assets/[name][ext]',
-        },
-      },
-    ],
+    rules: [],
   },
   plugins: [
-    // Copy all files from public/ to dist/
+    // Copy all files from public/ to dist/ maintaining structure
     new CopyWebpackPlugin({
       patterns: [
         {
@@ -63,6 +42,10 @@ module.exports = {
   // Performance hints
   performance: {
     hints: false,
+  },
+  // Optimize for faster builds
+  optimization: {
+    minimize: false, // Don't minify since we're just copying
   },
 };
 
