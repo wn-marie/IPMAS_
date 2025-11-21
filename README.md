@@ -10,8 +10,9 @@
 
 ## 🚀 Live Demo
 
-**Backend API**: [https://ipmas-backend.onrender.com](https://ipmas-backend.onrender.com)
+**Frontend Application**: [https://ipmas-backend.onrender.com](https://ipmas-backend.onrender.com)
 
+**Backend API Endpoints**:
 - **Health Check**: [https://ipmas-backend.onrender.com/health](https://ipmas-backend.onrender.com/health)
 - **API Info**: [https://ipmas-backend.onrender.com/api/info](https://ipmas-backend.onrender.com/api/info)
 - **Analytics Endpoint**: [https://ipmas-backend.onrender.com/api/v1/analytics/poverty/all](https://ipmas-backend.onrender.com/api/v1/analytics/poverty/all)
