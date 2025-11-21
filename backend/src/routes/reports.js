@@ -3,6 +3,27 @@ const router = express.Router();
 const dbService = require('../config/postgis');
 const reportGenerator = require('../services/reportGenerator');
 
+// Helper function to get user email from request
+async function getUserEmail(req) {
+    // Try to get from session, token, or headers
+    if (req.session && req.session.user && req.session.user.email) {
+        return req.session.user.email;
+    }
+    if (req.user && req.user.email) {
+        return req.user.email;
+    }
+    if (req.headers['x-user-email']) {
+        return req.headers['x-user-email'];
+    }
+    // Try to get from cookies or localStorage (sent via header)
+    if (req.cookies && req.cookies.user_email) {
+        return req.cookies.user_email;
+    }
+    // For now, use a default or get from auth token
+    // In production, implement proper authentication
+    return 'anonymous@ipmas.local';
+}
+
 // Generate a new report
 router.post('/generate', async (req, res) => {
     try {
@@ -96,6 +117,61 @@ router.get('/download/:reportId', async (req, res) => {
                 error: 'Report file not found',
                 message: 'The report file has been deleted or moved'
             });
+        }
+        
+        // Get user email for notification
+        const userEmail = await getUserEmail(req);
+        console.log('📥 Report download - User email:', userEmail);
+        
+        // Create notification in database
+        try {
+            console.log('📥 Creating notification for report download...');
+            const notification = await dbService.createNotification(
+                userEmail,
+                '📥 Report Downloaded',
+                `${report.type} (${report.format.toUpperCase()}) has been downloaded successfully`,
+                'success',
+                {
+                    reportId: reportId,
+                    reportType: report.type,
+                    reportFormat: report.format,
+                    downloadUrl: `/api/v1/reports/download/${reportId}`
+                }
+            );
+            console.log('✅ Notification created:', notification.id);
+            
+            // Emit Socket.IO notification event to specific user
+            const io = req.app.get('io');
+            if (io) {
+                console.log('📡 Emitting Socket.IO notification event to user:', userEmail);
+                
+                // Prepare notification data
+                const notificationData = {
+                    id: notification.id,
+                    title: notification.title,
+                    message: notification.message,
+                    type: notification.type,
+                    timestamp: notification.created_at,
+                    metadata: typeof notification.metadata === 'string' 
+                        ? JSON.parse(notification.metadata) 
+                        : notification.metadata
+                };
+                
+                // Emit to user-specific room
+                const userRoom = `user-${userEmail}`;
+                io.to(userRoom).emit('notification', notificationData);
+                console.log(`✅ Socket.IO notification emitted to room: ${userRoom}`);
+                
+                // Also emit to all clients as fallback (for testing)
+                io.emit('notification', notificationData);
+                console.log('✅ Socket.IO notification also broadcast to all clients');
+            } else {
+                console.warn('⚠️ Socket.IO instance not available');
+            }
+        } catch (notifError) {
+            console.error('❌ Error creating notification:', notifError);
+            console.error('Error stack:', notifError.stack);
+            // Don't fail the download if notification fails
         }
         
         // Set appropriate headers based on format

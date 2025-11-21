@@ -193,8 +193,40 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script src="scripts/config.js"></script>
     <script src="scripts/dynamic-poverty-calculator.js"></script>
+    <script src="scripts/notifications.js?v=20250120"></script>
+    <script>
+        // Ensure notification system is initialized after all scripts load
+        console.log('🔔 area-report.html: All scripts loaded');
+        console.log('   typeof NotificationSystem:', typeof NotificationSystem);
+        console.log('   window.notificationSystem:', window.notificationSystem);
+        
+        // Force initialization if not already done
+        setTimeout(() => {
+            if (!window.notificationSystem && typeof NotificationSystem !== 'undefined') {
+                console.log('🔔 Forcing notification system initialization...');
+                try {
+                    window.notificationSystem = new NotificationSystem();
+                    console.log('✅ Notification system initialized from area-report.html');
+                    
+                    // Expose test functions
+                    window.testNotification = () => {
+                        if (window.notificationSystem && window.notificationSystem.showNotification) {
+                            window.notificationSystem.showNotification('🧪 Test', 'success', 'Manual test', 5000);
+                        }
+                    };
+                } catch (error) {
+                    console.error('❌ Error initializing notification system:', error);
+                }
+            } else if (window.notificationSystem) {
+                console.log('✅ Notification system already initialized');
+            } else {
+                console.warn('⚠️ NotificationSystem class not available');
+            }
+        }, 1000);
+    </script>
     <script src="scripts/area-report.js"></script>
 </body>
 </html>

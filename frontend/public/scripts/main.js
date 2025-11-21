@@ -211,6 +211,10 @@ class IPMASApp {
                         message: 'Realtime channel connected'
                     });
                     this.debug('Socket connected');
+                    
+                    // Identify user to server for targeted notifications
+                    this.identifyUser();
+                    
                     resolve();
                 });
 
@@ -302,6 +306,43 @@ class IPMASApp {
                 reject(error);
             }
         });
+    }
+
+    identifyUser() {
+        // Get user email from localStorage or session
+        try {
+            const userData = localStorage.getItem('ipmas_user_data');
+            let userEmail = null;
+            
+            if (userData) {
+                const parsed = JSON.parse(userData);
+                userEmail = parsed.email || parsed.user_email;
+            }
+            
+            // Also try to get from session storage
+            if (!userEmail) {
+                const sessionData = sessionStorage.getItem('ipmas_session');
+                if (sessionData) {
+                    const parsed = JSON.parse(sessionData);
+                    userEmail = parsed.email || parsed.user_email;
+                }
+            }
+            
+            // Try subscription manager
+            if (!userEmail && window.subscriptionManager && window.subscriptionManager.currentUser) {
+                userEmail = window.subscriptionManager.currentUser.email;
+            }
+            
+            // If we have an email, identify to server
+            if (userEmail && this.socket && this.socket.connected) {
+                console.log('🔐 Identifying user to server:', userEmail);
+                this.socket.emit('identify-user', { email: userEmail });
+            } else {
+                console.log('🔐 No user email found, using anonymous connection');
+            }
+        } catch (error) {
+            console.warn('Error identifying user:', error);
+        }
     }
 
     async initializeMap() {

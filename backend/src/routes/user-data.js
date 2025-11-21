@@ -181,7 +181,83 @@ router.post('/notifications', async (req, res) => {
     }
 });
 
+// Get notifications
 router.get('/notifications', async (req, res) => {
+    try {
+        const email = await getUserEmail(req);
+        if (!email) {
+            return res.status(401).json({ success: false, error: 'Authentication required' });
+        }
+
+        const { unreadOnly, limit } = req.query;
+        const notifications = await dbService.getNotifications(
+            email,
+            parseInt(limit) || 50,
+            unreadOnly === 'true'
+        );
+        const unreadCount = await dbService.getUnreadCount(email);
+        
+        res.json({ 
+            success: true, 
+            notifications: notifications,
+            unreadCount: unreadCount
+        });
+    } catch (error) {
+        console.error('Error getting notifications:', error);
+        res.status(500).json({ success: false, error: 'Failed to get notifications' });
+    }
+});
+
+// Create notification (POST endpoint for fallback)
+router.post('/notifications', async (req, res) => {
+    try {
+        const email = await getUserEmail(req) || 'anonymous@ipmas.local';
+        const { title, message, type = 'info', metadata = {} } = req.body;
+        
+        if (!title) {
+            return res.status(400).json({ success: false, error: 'Title is required' });
+        }
+        
+        console.log('📝 Creating notification via API:', { email, title, type });
+        
+        const notification = await dbService.createNotification(
+            email,
+            title,
+            message || '',
+            type,
+            metadata
+        );
+        
+        // Emit via Socket.IO if available
+        const io = req.app.get('io');
+        if (io) {
+            const notificationData = {
+                id: notification.id,
+                title: notification.title,
+                message: notification.message,
+                type: notification.type,
+                timestamp: notification.created_at,
+                metadata: typeof notification.metadata === 'string' 
+                    ? JSON.parse(notification.metadata) 
+                    : notification.metadata
+            };
+            
+            const userRoom = `user-${email}`;
+            io.to(userRoom).emit('notification', notificationData);
+            io.emit('notification', notificationData); // Also broadcast
+        }
+        
+        res.json({ 
+            success: true, 
+            notification: notification 
+        });
+    } catch (error) {
+        console.error('Error creating notification:', error);
+        res.status(500).json({ success: false, error: 'Failed to create notification' });
+    }
+});
+
+router.get('/notifications/settings', async (req, res) => {
     try {
         const email = await getUserEmail(req);
         if (!email) {
@@ -193,6 +269,82 @@ router.get('/notifications', async (req, res) => {
     } catch (error) {
         console.error('Error getting notification settings:', error);
         res.status(500).json({ success: false, error: 'Failed to get notification settings' });
+    }
+});
+
+router.post('/notifications/:id/read', async (req, res) => {
+    try {
+        const email = await getUserEmail(req);
+        if (!email) {
+            return res.status(401).json({ success: false, error: 'Authentication required' });
+        }
+
+        const { id } = req.params;
+        const notification = await dbService.markNotificationAsRead(id, email);
+        res.json({ success: true, notification: notification });
+    } catch (error) {
+        console.error('Error marking notification as read:', error);
+        res.status(500).json({ success: false, error: 'Failed to mark notification as read' });
+    }
+});
+
+// TEST ENDPOINT: Manually trigger a notification for testing
+router.post('/notifications/test', async (req, res) => {
+    try {
+        const email = await getUserEmail(req) || 'test@ipmas.local';
+        const io = req.app.get('io');
+        
+        console.log('🧪 TEST: Creating test notification for:', email);
+        
+        // Create test notification
+        const notification = await dbService.createNotification(
+            email,
+            '🧪 Test Notification',
+            'This is a test notification to verify the system is working',
+            'info',
+            { test: true, timestamp: new Date().toISOString() }
+        );
+        
+        console.log('🧪 TEST: Notification created:', notification.id);
+        
+        // Emit via Socket.IO
+        if (io) {
+            const notificationData = {
+                id: notification.id,
+                title: notification.title,
+                message: notification.message,
+                type: notification.type,
+                timestamp: notification.created_at,
+                metadata: typeof notification.metadata === 'string' 
+                    ? JSON.parse(notification.metadata) 
+                    : notification.metadata
+            };
+            
+            // Emit to user room
+            const userRoom = `user-${email}`;
+            io.to(userRoom).emit('notification', notificationData);
+            console.log('🧪 TEST: Emitted to room:', userRoom);
+            
+            // Also broadcast to all
+            io.emit('notification', notificationData);
+            console.log('🧪 TEST: Also broadcast to all clients');
+        } else {
+            console.warn('🧪 TEST: Socket.IO not available');
+        }
+        
+        res.json({ 
+            success: true, 
+            message: 'Test notification created and emitted',
+            notification: notification,
+            socketAvailable: !!io
+        });
+    } catch (error) {
+        console.error('🧪 TEST: Error:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message,
+            stack: error.stack
+        });
     }
 });
 

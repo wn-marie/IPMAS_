@@ -1536,6 +1536,23 @@ class DatabaseService {
 
             CREATE INDEX IF NOT EXISTS idx_notification_settings_email ON notification_settings(user_email);
 
+            -- Notifications table
+            CREATE TABLE IF NOT EXISTS notifications (
+                id SERIAL PRIMARY KEY,
+                user_email VARCHAR(255),
+                title VARCHAR(255) NOT NULL,
+                message TEXT,
+                type VARCHAR(50) DEFAULT 'info',
+                read_status BOOLEAN DEFAULT FALSE,
+                metadata JSONB,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_notifications_email ON notifications(user_email);
+            CREATE INDEX IF NOT EXISTS idx_notifications_read_status ON notifications(read_status);
+            CREATE INDEX IF NOT EXISTS idx_notifications_created_at ON notifications(created_at DESC);
+
             -- Download requests table
             CREATE TABLE IF NOT EXISTS download_requests (
                 id SERIAL PRIMARY KEY,
@@ -1910,6 +1927,85 @@ class DatabaseService {
         return typeof result.rows[0].settings_data === 'string' 
             ? JSON.parse(result.rows[0].settings_data) 
             : result.rows[0].settings_data;
+    }
+
+    // Notification methods
+    async createNotification(email, title, message, type = 'info', metadata = {}) {
+        if (!this.isInitialized) await this.initialize();
+
+        try {
+            console.log('📝 Creating notification in database:', { email, title, type });
+            
+            const query = `
+                INSERT INTO notifications (user_email, title, message, type, metadata)
+                VALUES ($1, $2, $3, $4, $5)
+                RETURNING *
+            `;
+            const result = await this.pool.query(query, [
+                email,
+                title,
+                message,
+                type,
+                JSON.stringify(metadata)
+            ]);
+            
+            console.log('✅ Notification created successfully:', result.rows[0]?.id);
+            return result.rows[0];
+        } catch (error) {
+            console.error('❌ Error creating notification:', error);
+            console.error('Error details:', {
+                message: error.message,
+                code: error.code,
+                detail: error.detail,
+                table: error.table
+            });
+            throw error;
+        }
+    }
+
+    async getNotifications(email, limit = 50, unreadOnly = false) {
+        if (!this.isInitialized) await this.initialize();
+
+        let query = `
+            SELECT * FROM notifications 
+            WHERE user_email = $1
+        `;
+        const params = [email];
+
+        if (unreadOnly) {
+            query += ` AND read_status = FALSE`;
+        }
+
+        query += ` ORDER BY created_at DESC LIMIT $${params.length + 1}`;
+        params.push(limit);
+
+        const result = await this.pool.query(query, params);
+        return result.rows;
+    }
+
+    async markNotificationAsRead(notificationId, email) {
+        if (!this.isInitialized) await this.initialize();
+
+        const query = `
+            UPDATE notifications 
+            SET read_status = TRUE, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $1 AND user_email = $2
+            RETURNING *
+        `;
+        const result = await this.pool.query(query, [notificationId, email]);
+        return result.rows[0];
+    }
+
+    async getUnreadCount(email) {
+        if (!this.isInitialized) await this.initialize();
+
+        const query = `
+            SELECT COUNT(*) as count 
+            FROM notifications 
+            WHERE user_email = $1 AND read_status = FALSE
+        `;
+        const result = await this.pool.query(query, [email]);
+        return parseInt(result.rows[0]?.count || 0);
     }
 
     // Download requests methods

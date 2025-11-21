@@ -2015,17 +2015,66 @@ function downloadPDFReport() {
         html2pdf().set(opt).from(reportContent).save().then(() => {
                 console.log('✅ PDF generated successfully');
                 
-                // Dispatch notification event
+                // Get location name
                 const locationName = (window.reportGenerator?.locationData?.name || 
                                     window.reportGenerator?.locationData?.location_name || 
                                     'Area Report');
-                document.dispatchEvent(new CustomEvent('reportDownloaded', {
-                    detail: {
-                        id: Date.now(),
-                        type: locationName,
-                        format: 'pdf'
+                
+                // Check if notification system is available
+                console.log('📥 Checking notification system availability...');
+                console.log('   window.notificationSystem:', window.notificationSystem);
+                console.log('   typeof window.notificationSystem:', typeof window.notificationSystem);
+                
+                // Wait a moment for notification system to initialize if needed
+                setTimeout(() => {
+                    // Dispatch notification event
+                    const event = new CustomEvent('reportDownloaded', {
+                        detail: {
+                            id: Date.now(),
+                            type: locationName,
+                            format: 'pdf'
+                        },
+                        bubbles: true,
+                        cancelable: true
+                    });
+                    
+                    console.log('📥 Dispatching reportDownloaded event:', event.detail);
+                    const dispatched = document.dispatchEvent(event);
+                    console.log('📥 Event dispatched, result:', dispatched);
+                    console.log('📥 Active listeners:', document.addEventListener.toString());
+                    
+                    // Also show notification directly (fallback if event listener not working)
+                    if (window.notificationSystem && typeof window.notificationSystem.showNotification === 'function') {
+                        console.log('📥 Using notificationSystem.showNotification directly');
+                        try {
+                            window.notificationSystem.showNotification(
+                                '✅ PDF Report Downloaded',
+                                'success',
+                                `${locationName} PDF report has been downloaded successfully`,
+                                4000
+                            );
+                            console.log('✅ Notification shown successfully');
+                        } catch (notifError) {
+                            console.error('❌ Error showing notification:', notifError);
+                        }
+                    } else {
+                        console.warn('📥 notificationSystem not available or showNotification not a function');
+                        console.warn('   window.notificationSystem:', window.notificationSystem);
+                        // Fallback: try to initialize notification system
+                        if (typeof NotificationSystem !== 'undefined') {
+                            console.log('📥 Initializing notification system as fallback...');
+                            window.notificationSystem = new NotificationSystem();
+                            if (window.notificationSystem && window.notificationSystem.showNotification) {
+                                window.notificationSystem.showNotification(
+                                    '✅ PDF Report Downloaded',
+                                    'success',
+                                    `${locationName} PDF report has been downloaded successfully`,
+                                    4000
+                                );
+                            }
+                        }
                     }
-                }));
+                }, 100);
                 
                 // Also show notification directly if system is available
                 if (window.notificationSystem) {

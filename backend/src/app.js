@@ -156,6 +156,9 @@ app.use('/api/v1/location', locationRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1/unified-data', unifiedDataRoutes);
 app.use('/api/v1/feedback', feedbackRoutes);
+// Make Socket.IO instance available to routes
+app.set('io', io);
+
 app.use('/api/v1/reports', reportsRoutes);
 app.use('/api/v1/questionnaire', questionnaireRoutes);
 app.use('/api/v1/upgrade', upgradeRoutes);
@@ -257,6 +260,10 @@ app.get('/api/info', (req, res) => {
     });
 });
 
+// User-to-socket mapping for targeted notifications
+const userSocketMap = new Map(); // email -> Set of socketIds
+const socketUserMap = new Map(); // socketId -> email
+
 // Socket.IO connection handling with enhanced real-time features
 io.on('connection', (socket) => {
     console.log('Client connected:', socket.id);
@@ -266,8 +273,31 @@ io.on('connection', (socket) => {
         id: socket.id,
         connectedAt: new Date(),
         activeRooms: new Set(),
-        lastActivity: new Date()
+        lastActivity: new Date(),
+        userEmail: null
     };
+
+    // Handle user authentication/identification
+    socket.on('identify-user', (userData) => {
+        const email = userData?.email || userData;
+        if (email) {
+            socket.clientData.userEmail = email;
+            socketUserMap.set(socket.id, email);
+            
+            // Add socket to user's socket set
+            if (!userSocketMap.has(email)) {
+                userSocketMap.set(email, new Set());
+            }
+            userSocketMap.get(email).add(socket.id);
+            
+            // Join user-specific notification room
+            const userRoom = `user-${email}`;
+            socket.join(userRoom);
+            socket.clientData.activeRooms.add(userRoom);
+            
+            console.log(`✅ User identified: ${email} (socket: ${socket.id})`);
+        }
+    });
 
     // Send initial system status
     socket.emit('system-status', {
@@ -611,6 +641,20 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         console.log('Client disconnected:', socket.id);
+        
+        // Clean up user-socket mapping
+        const email = socketUserMap.get(socket.id);
+        if (email) {
+            const userSockets = userSocketMap.get(email);
+            if (userSockets) {
+                userSockets.delete(socket.id);
+                if (userSockets.size === 0) {
+                    userSocketMap.delete(email);
+                }
+            }
+            socketUserMap.delete(socket.id);
+            console.log(`Cleaned up user mapping for: ${email}`);
+        }
         
         // Clean up client data
         socket.clientData.activeRooms.forEach(roomName => {

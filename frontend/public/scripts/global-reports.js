@@ -879,16 +879,22 @@ class ReportsManager {
             
             // Show success notification after a short delay
             setTimeout(() => {
+                console.log('📥 Report download completed, triggering notifications...');
+                
                 // Dispatch event for notification system
-                document.dispatchEvent(new CustomEvent('reportDownloaded', {
+                const event = new CustomEvent('reportDownloaded', {
                     detail: {
                         id: reportId,
                         type: reportType,
                         format: format
                     }
-                }));
+                });
+                document.dispatchEvent(event);
+                console.log('📥 reportDownloaded event dispatched');
                 
+                // Also show notification directly
                 if (window.notificationSystem) {
+                    console.log('📥 Using notificationSystem.showNotification');
                     window.notificationSystem.showNotification(
                         '✅ Download Complete',
                         'success',
@@ -896,11 +902,14 @@ class ReportsManager {
                         4000
                     );
                 } else if (window.ipmasApp && window.ipmasApp.showNotification) {
+                    console.log('📥 Using ipmasApp.showNotification');
                     window.ipmasApp.showNotification(
                         `${reportType} downloaded successfully`,
                         'success',
                         4000
                     );
+                } else {
+                    console.warn('📥 No notification system available!');
                 }
             }, 500);
             

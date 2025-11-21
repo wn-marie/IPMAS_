@@ -138,27 +138,299 @@ class NotificationSystem {
     }
     init() {
         console.log('🔔 Notification System initializing...');
-        this.createNotificationUI();
-        this.setupEventListeners();
-        this.startMonitoring();
-        console.log('✅ Notification System initialized');
+        console.log('🔔 Window object:', {
+            notificationSystem: !!window.notificationSystem,
+            ipmasApp: !!window.ipmasApp,
+            io: typeof io !== 'undefined',
+            socket: window.ipmasApp?.socket?.connected,
+            documentReadyState: document.readyState
+        });
+        
+        try {
+            this.createNotificationUI();
+            this.setupEventListeners();
+            this.setupSocketIO();
+            this.loadNotifications();
+            this.startMonitoring();
+            
+            // Add test function to window for debugging
+            window.testNotification = () => {
+                console.log('🧪 Testing notification system...');
+                if (this && typeof this.showNotification === 'function') {
+                    this.showNotification('🧪 Test', 'success', 'Manual test notification', 5000);
+                } else {
+                    console.error('❌ showNotification is not available');
+                }
+            };
+            
+            // Add function to test API endpoint
+            window.testNotificationAPI = async () => {
+                try {
+                    console.log('🧪 Testing notification API...');
+                    const response = await fetch('/api/v1/user-data/notifications/test', {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    const data = await response.json();
+                    console.log('🧪 API Response:', data);
+                    return data;
+                } catch (error) {
+                    console.error('🧪 API Error:', error);
+                    return { error: error.message };
+                }
+            };
+            
+            console.log('✅ Notification System initialized');
+            console.log('🔔 Test functions available: window.testNotification() and window.testNotificationAPI()');
+            console.log('🔔 Notification System instance:', this);
+        } catch (error) {
+            console.error('❌ Error during notification system initialization:', error);
+            console.error('Error stack:', error.stack);
+        }
+    }
+
+    setupSocketIO() {
+        console.log('🔔 Setting up Socket.IO for notifications...');
+        
+        // Function to check Socket.IO availability
+        const checkSocketIO = () => {
+            // Check if Socket.IO library is loaded
+            if (typeof io === 'undefined') {
+                console.warn('🔔 Socket.IO library not loaded');
+                return false;
+            }
+            return true;
+        };
+        
+        // Function to setup socket connection
+        const setupConnection = () => {
+            // Try to use existing socket connection from IPMASApp first
+            if (window.ipmasApp && window.ipmasApp.socket) {
+                if (window.ipmasApp.socket.connected) {
+                    this.socket = window.ipmasApp.socket;
+                    console.log('✅ Notification System: Using existing Socket.IO connection from IPMASApp');
+                    this.attachSocketListeners();
+                    return true;
+                } else {
+                    console.log('🔔 IPMASApp socket exists but not connected, waiting...');
+                    // Wait for connection
+                    const connectHandler = () => {
+                        if (window.ipmasApp.socket.connected) {
+                            this.socket = window.ipmasApp.socket;
+                            console.log('✅ Notification System: Socket connected, using IPMASApp connection');
+                            this.attachSocketListeners();
+                            window.ipmasApp.socket.off('connect', connectHandler);
+                            return true;
+                        }
+                    };
+                    window.ipmasApp.socket.on('connect', connectHandler);
+                    return false;
+                }
+            } else if (checkSocketIO()) {
+                // Create new Socket.IO connection
+                const socketUrl = window.API_CONFIG?.getSocketUrl?.() || window.API_CONFIG?.SOCKET_URL || 'http://localhost:3001';
+                console.log('🔔 Creating new Socket.IO connection to:', socketUrl);
+                
+                try {
+                    this.socket = io(socketUrl, {
+                        transports: ['websocket', 'polling'],
+                        timeout: 5000,
+                        reconnection: true,
+                        reconnectionAttempts: 5,
+                        reconnectionDelay: 1000
+                    });
+                    
+                    // Set up listeners immediately (will work once connected)
+                    this.attachSocketListeners();
+                    
+                    // Log connection status
+                    this.socket.on('connect', () => {
+                        console.log('✅ Notification System: Socket.IO connected');
+                        // Identify user once connected
+                        if (window.ipmasApp && window.ipmasApp.identifyUser) {
+                            window.ipmasApp.identifyUser();
+                        }
+                    });
+                    
+                    this.socket.on('connect_error', (error) => {
+                        console.warn('🔔 Socket.IO connection error:', error.message);
+                    });
+                    
+                    return true;
+                } catch (error) {
+                    console.error('🔔 Error creating Socket.IO connection:', error);
+                    return false;
+                }
+            }
+            return false;
+        };
+
+        // Try immediately
+        if (!setupConnection() && checkSocketIO()) {
+            // Try again after delays
+            console.log('🔔 Socket.IO not ready yet, retrying...');
+            const retryTimes = [1000, 3000, 5000];
+            let retryIndex = 0;
+            
+            const retrySetup = () => {
+                if (setupConnection()) {
+                    console.log('✅ Socket.IO setup successful');
+                    return;
+                }
+                
+                if (retryIndex < retryTimes.length) {
+                    setTimeout(retrySetup, retryTimes[retryIndex] - (retryIndex > 0 ? retryTimes[retryIndex - 1] : 0));
+                    retryIndex++;
+                } else {
+                    console.warn('🔔 Socket.IO setup failed after retries - notifications will work via events only');
+                }
+            };
+            
+            setTimeout(retrySetup, 1000);
+        } else if (!checkSocketIO()) {
+            console.warn('🔔 Socket.IO library not available - notifications will work via events only');
+        }
+    }
+
+    attachSocketListeners() {
+        if (!this.socket) return;
+
+        this.socket.on('connect', () => {
+            console.log('🔔 Notification System: Socket.IO connected');
+        });
+
+        this.socket.on('disconnect', () => {
+            console.log('🔔 Notification System: Socket.IO disconnected');
+        });
+
+        // Listen for notification events from server
+        this.socket.on('notification', (notificationData) => {
+            console.log('🔔 Received notification from server:', notificationData);
+            
+            // Validate notification data
+            if (!notificationData || !notificationData.title) {
+                console.warn('🔔 Invalid notification data received:', notificationData);
+                return;
+            }
+            
+            // Add to notifications list
+            const notificationId = `n-${notificationData.id || Date.now()}`;
+            
+            // Check if notification already exists
+            const exists = this.notifications.some(n => n.id === notificationId);
+            if (!exists) {
+                const newNotification = {
+                    id: notificationId,
+                    title: notificationData.title || 'Notification',
+                    type: notificationData.type || 'info',
+                    message: notificationData.message || '',
+                    timestamp: notificationData.timestamp || new Date().toISOString(),
+                    read: false,
+                    metadata: notificationData.metadata || {}
+                };
+                
+                this.notifications.unshift(newNotification);
+                this.unreadCount += 1;
+                this.updateBadge();
+                this.renderPanel();
+                
+                console.log('✅ Notification added to list. Total:', this.notifications.length, 'Unread:', this.unreadCount);
+            } else {
+                console.log('🔔 Notification already exists, skipping duplicate');
+            }
+            
+            // Show visual notification
+            this.showNotification(
+                notificationData.title || 'Notification',
+                notificationData.type || 'info',
+                notificationData.message || '',
+                4000
+            );
+        });
+    }
+
+    async createNotificationFallback(reportData) {
+        // Fallback: Create notification via API if Socket.IO didn't work
+        try {
+            const response = await fetch('/api/v1/user-data/notifications', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    title: '📥 Report Downloaded',
+                    message: `${reportData.type || 'Report'} (${reportData.format?.toUpperCase() || ''}) has been downloaded successfully`,
+                    type: 'success',
+                    metadata: reportData
+                })
+            });
+            
+            if (response.ok) {
+                console.log('✅ Notification created via API fallback');
+            }
+        } catch (error) {
+            console.warn('🔔 Could not create notification via API fallback:', error);
+        }
+    }
+
+    async loadNotifications() {
+        try {
+            // Fetch notifications from API
+            const response = await fetch('/api/v1/user-data/notifications', {
+                credentials: 'include'
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.notifications) {
+                    // Add notifications to the list
+                    this.notifications = data.notifications.map(n => ({
+                        id: `n-${n.id}`,
+                        title: n.title,
+                        type: n.type,
+                        message: n.message,
+                        timestamp: n.created_at,
+                        read: n.read_status
+                    }));
+                    
+                    // Update unread count
+                    this.unreadCount = this.notifications.filter(n => !n.read).length;
+                    this.updateBadge();
+                    this.renderPanel();
+                }
+            }
+        } catch (error) {
+            console.warn('Error loading notifications:', error);
+        }
     }
 
     createNotificationUI() {
+        console.log('🔔 Creating notification UI...');
+        
         // Create notification container
-        const notificationContainer = document.createElement('div');
-        notificationContainer.id = 'notificationContainer';
-        notificationContainer.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 350px;
-            max-height: 500px;
-            overflow-y: auto;
-            z-index: 10000;
-            pointer-events: none;
-        `;
-        document.body.appendChild(notificationContainer);
+        let notificationContainer = document.getElementById('notificationContainer');
+        if (!notificationContainer) {
+            notificationContainer = document.createElement('div');
+            notificationContainer.id = 'notificationContainer';
+            notificationContainer.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                width: 350px;
+                max-height: 500px;
+                overflow-y: auto;
+                z-index: 10000;
+                pointer-events: none;
+            `;
+            document.body.appendChild(notificationContainer);
+            console.log('✅ Notification container created');
+        } else {
+            console.log('✅ Notification container already exists');
+        }
 
         // Create notification bell with counter and dropdown panel in header
         const header = document.querySelector('.header');
@@ -230,16 +502,30 @@ class NotificationSystem {
             );
         });
         
-        // Listen for report downloads
+        // Listen for report downloads - use capture phase to catch early
         document.addEventListener('reportDownloaded', (e) => {
+            console.log('🔔 reportDownloaded event received:', e.detail);
+            console.log('🔔 Event target:', e.target);
+            console.log('🔔 Event currentTarget:', e.currentTarget);
+            
             // Always show notification for report downloads
-            this.showNotification(
-                '📥 Report Downloaded', 
-                'success', 
-                `${e.detail.type || 'Report'} (${e.detail.format?.toUpperCase() || ''}) has been downloaded successfully`,
-                4000
-            );
-        });
+            if (typeof this.showNotification === 'function') {
+                this.showNotification(
+                    '📥 Report Downloaded', 
+                    'success', 
+                    `${e.detail.type || 'Report'} (${e.detail.format?.toUpperCase() || ''}) has been downloaded successfully`,
+                    4000
+                );
+            } else {
+                console.error('❌ showNotification is not a function!');
+            }
+            
+            // Also try to create notification in backend (if Socket.IO isn't working)
+            // This is a fallback to ensure notifications are stored
+            if (typeof this.createNotificationFallback === 'function') {
+                this.createNotificationFallback(e.detail);
+            }
+        }, true); // Use capture phase to catch event early
 
         // Listen for filter changes that might trigger threshold alerts
         document.addEventListener('filtersChanged', (e) => {
@@ -319,8 +605,20 @@ class NotificationSystem {
     }
 
     showNotification(title, type = 'info', message = '', duration = 4000) {
+        console.log('🔔 showNotification called:', { title, type, message, duration });
+        
+        // Ensure UI is created first
+        this.createNotificationUI();
+        
         const container = document.getElementById('notificationContainer');
-        if (!container) return;
+        if (!container) {
+            console.error('❌ Notification container still not found after createNotificationUI()');
+            // Fallback: use alert
+            alert(`${title}: ${message || ''}`);
+            return;
+        }
+        
+        console.log('✅ Notification container found, creating notification...');
 
         // Store notification and update badge / panel list
         this.notifications.unshift({
@@ -474,12 +772,122 @@ if (!document.getElementById('notificationStyles')) {
     document.head.appendChild(style);
 }
 
-// Initialize when DOM is ready
+// Initialize notification system immediately when script loads
+console.log('🔔 Notification script file loaded');
+console.log('   typeof NotificationSystem:', typeof NotificationSystem);
+console.log('   typeof window:', typeof window);
+
+// Ensure NotificationSystem is available globally
+if (typeof window !== 'undefined' && typeof NotificationSystem !== 'undefined') {
+    window.NotificationSystem = NotificationSystem;
+    console.log('✅ NotificationSystem class exposed to window');
+}
+
+function initializeNotificationSystem() {
+    try {
+        console.log('🔔 initializeNotificationSystem() called');
+        console.log('   typeof NotificationSystem:', typeof NotificationSystem);
+        console.log('   typeof window.NotificationSystem:', typeof window.NotificationSystem);
+        
+        // Check if NotificationSystem class is available
+        const NSClass = typeof NotificationSystem !== 'undefined' ? NotificationSystem : 
+                       (typeof window !== 'undefined' && window.NotificationSystem) ? window.NotificationSystem : null;
+        
+        if (!NSClass) {
+            console.error('❌ NotificationSystem class not found!');
+            console.error('   Available globals:', Object.keys(window).filter(k => k.includes('Notification') || k.includes('notif')));
+            return;
+        }
+        
+        // Don't initialize if already exists
+        if (window.notificationSystem) {
+            console.log('🔔 Notification System already initialized, reusing existing instance');
+            return window.notificationSystem;
+        }
+        
+        console.log('🔔 Creating new NotificationSystem instance...');
+        window.notificationSystem = new NSClass();
+        console.log('✅ Notification System instance created:', window.notificationSystem);
+        console.log('   Type:', typeof window.notificationSystem);
+        console.log('   Has showNotification:', typeof window.notificationSystem.showNotification === 'function');
+        
+        // Expose test functions globally
+        if (window.notificationSystem) {
+            window.testNotification = () => {
+                console.log('🧪 Testing notification system...');
+                if (window.notificationSystem && typeof window.notificationSystem.showNotification === 'function') {
+                    window.notificationSystem.showNotification('🧪 Test', 'success', 'Manual test notification', 5000);
+                } else {
+                    console.error('❌ showNotification not available');
+                    console.error('   notificationSystem:', window.notificationSystem);
+                }
+            };
+            
+            window.testNotificationAPI = async () => {
+                try {
+                    console.log('🧪 Testing notification API...');
+                    const response = await fetch('/api/v1/user-data/notifications/test', {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    const data = await response.json();
+                    console.log('🧪 API Response:', data);
+                    return data;
+                } catch (error) {
+                    console.error('🧪 API Error:', error);
+                    return { error: error.message };
+                }
+            };
+            
+            console.log('✅ Test functions exposed: window.testNotification() and window.testNotificationAPI()');
+        }
+        
+        return window.notificationSystem;
+    } catch (error) {
+        console.error('❌ Error initializing Notification System:', error);
+        console.error('   Error message:', error.message);
+        console.error('   Error stack:', error.stack);
+        return null;
+    }
+}
+
+// Initialize immediately - don't wait for DOM
+console.log('🔔 Setting up initialization...');
+console.log('   Document ready state:', document.readyState);
+
 if (document.readyState === 'loading') {
+    // DOM not ready yet, wait for it
+    console.log('🔔 Waiting for DOM to load...');
     document.addEventListener('DOMContentLoaded', () => {
-        window.notificationSystem = new NotificationSystem();
+        console.log('🔔 DOM loaded, initializing notification system...');
+        initializeNotificationSystem();
     });
 } else {
-    window.notificationSystem = new NotificationSystem();
+    // DOM already ready, initialize immediately
+    console.log('🔔 DOM ready, initializing notification system immediately...');
+    setTimeout(() => {
+        initializeNotificationSystem();
+    }, 100); // Small delay to ensure class is defined
 }
+
+// Also try to initialize after a short delay as fallback
+setTimeout(() => {
+    if (!window.notificationSystem) {
+        console.warn('🔔 Notification system not initialized yet, trying again...');
+        initializeNotificationSystem();
+    } else {
+        console.log('✅ Notification system confirmed initialized');
+    }
+}, 500);
+
+// Try one more time after longer delay
+setTimeout(() => {
+    if (!window.notificationSystem) {
+        console.warn('🔔 Notification system still not initialized, final attempt...');
+        initializeNotificationSystem();
+    }
+}, 1500);
 
