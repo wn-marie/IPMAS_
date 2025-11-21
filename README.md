@@ -8,6 +8,14 @@
 
 **IPMAS** is a comprehensive, production-ready platform for poverty mapping, analysis, and prediction using machine learning. Built with real Kenyan household data, it provides data-driven insights to support policy decisions, resource allocation, and targeted interventions.
 
+## 🚀 Live Demo
+
+**Backend API**: [https://ipmas-backend.onrender.com](https://ipmas-backend.onrender.com)
+
+- **Health Check**: [https://ipmas-backend.onrender.com/health](https://ipmas-backend.onrender.com/health)
+- **API Info**: [https://ipmas-backend.onrender.com/api/info](https://ipmas-backend.onrender.com/api/info)
+- **Analytics Endpoint**: [https://ipmas-backend.onrender.com/api/v1/analytics/poverty/all](https://ipmas-backend.onrender.com/api/v1/analytics/poverty/all)
+
 ---
 
 ## ⚡ Quick Start
