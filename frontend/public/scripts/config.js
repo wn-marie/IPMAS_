@@ -5,9 +5,12 @@
 
 // Backend API Configuration
 // Auto-detect environment: use relative URLs in production, localhost/network IP in development
+// You can force localhost by adding ?local=true to the URL or setting FORCE_LOCAL in localStorage
 const hostname = window.location.hostname;
-const isProduction = hostname !== 'localhost' && hostname !== '127.0.0.1' && !hostname.match(/^192\.168\.|^10\.|^172\.(1[6-9]|2\d|3[01])\./);
-const isNetworkIP = !isProduction && (hostname.match(/^192\.168\.|^10\.|^172\.(1[6-9]|2\d|3[01])\./) || hostname !== 'localhost' && hostname !== '127.0.0.1');
+const urlParams = new URLSearchParams(window.location.search);
+const forceLocal = urlParams.get('local') === 'true' || localStorage.getItem('FORCE_LOCAL') === 'true';
+const isProduction = !forceLocal && hostname !== 'localhost' && hostname !== '127.0.0.1' && !hostname.match(/^192\.168\.|^10\.|^172\.(1[6-9]|2\d|3[01])\./);
+const isNetworkIP = !isProduction && !forceLocal && (hostname.match(/^192\.168\.|^10\.|^172\.(1[6-9]|2\d|3[01])\./) || hostname !== 'localhost' && hostname !== '127.0.0.1');
 
 const API_CONFIG = {
     // Backend runs on port 3001 (API only) in development, same origin in production
@@ -50,6 +53,15 @@ const FRONTEND_CONFIG = {
 // Make available globally
 window.API_CONFIG = API_CONFIG;
 window.FRONTEND_CONFIG = FRONTEND_CONFIG;
+
+// Log configuration for debugging
+console.log('🔧 API Configuration:', {
+    hostname: hostname,
+    isProduction: isProduction,
+    isNetworkIP: isNetworkIP,
+    BASE_URL: API_CONFIG.BASE_URL,
+    SOCKET_URL: API_CONFIG.SOCKET_URL
+});
 
 // Export for use in modules
 if (typeof module !== 'undefined' && module.exports) {
