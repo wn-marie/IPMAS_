@@ -205,50 +205,48 @@ router.get('/poverty/all', async (req, res) => {
         const allPovertyData = await dbService.getAllPovertyData();
         
         if (!allPovertyData || allPovertyData.length === 0) {
-            // Return sample data if no database data available
-            let sampleData = null;
-            try {
-                const sampleDataPath = require('path').join(__dirname, '../../frontend/public/data/sample-data-enhanced.js');
-                // Try to load sample data, but don't fail if it doesn't exist
-                if (require('fs').existsSync(sampleDataPath.replace('.js', '.js'))) {
-                    delete require.cache[require.resolve('../../frontend/public/data/sample-data-enhanced')];
-                    sampleData = require('../../frontend/public/data/sample-data-enhanced');
-                }
-            } catch (err) {
-                console.log('Sample data not available, returning empty result');
-            }
+            console.log('⚠️ No database data found, returning sample data fallback');
             
-            if (sampleData && sampleData.locations && Array.isArray(sampleData.locations)) {
-                const geoJsonData = {
-                    type: "FeatureCollection",
-                    features: sampleData.locations.map(location => ({
-                        type: "Feature",
-                        geometry: {
-                            type: "Point",
-                            coordinates: [location.lng, location.lat]
-                        },
-                        properties: {
-                            name: location.name,
-                            county: location.county,
-                            ward: location.ward,
-                            poverty_index: location.poverty_index,
-                            education_access: location.education_access,
-                            health_vulnerability: location.health_vulnerability,
-                            water_access: location.water_access,
-                            housing_quality: location.housing_quality,
-                            population: location.population,
-                            last_updated: new Date().toISOString()
-                        }
-                    }))
-                };
-                
-                return res.json(geoJsonData);
-            }
+            // Embedded sample data for fallback (works on Render when file system access is limited)
+            const sampleLocations = [
+                { name: 'Nairobi Central', lat: -1.2921, lng: 36.8219, county: 'Nairobi', ward: 'Central', poverty_index: 35.2, education_access: 78.5, health_vulnerability: 28.3, water_access: 85.2, housing_quality: 72.1, population: 450000 },
+                { name: 'Karen', lat: -1.3194, lng: 36.7081, county: 'Nairobi', ward: 'Karen', poverty_index: 10.5, education_access: 95.2, health_vulnerability: 8.1, water_access: 98.5, housing_quality: 92.3, population: 120000 },
+                { name: 'Kibera', lat: -1.3119, lng: 36.7806, county: 'Nairobi', ward: 'Kibera', poverty_index: 75.8, education_access: 45.2, health_vulnerability: 82.5, water_access: 35.8, housing_quality: 25.4, population: 250000 },
+                { name: 'Nakuru Town', lat: -0.3031, lng: 36.0800, county: 'Nakuru', ward: 'Nakuru Town', poverty_index: 54.2, education_access: 65.8, health_vulnerability: 58.2, water_access: 72.5, housing_quality: 55.3, population: 320000 },
+                { name: 'Kakamega', lat: 0.2842, lng: 34.7523, county: 'Kakamega', ward: 'Kakamega Central', poverty_index: 62.5, education_access: 58.3, health_vulnerability: 65.8, water_access: 68.2, housing_quality: 48.7, population: 190000 },
+                { name: 'Meru', lat: 0.0469, lng: 37.6559, county: 'Meru', ward: 'Meru Central', poverty_index: 48.7, education_access: 72.1, health_vulnerability: 45.3, water_access: 75.8, housing_quality: 62.4, population: 150000 },
+                { name: 'Eldoret', lat: 0.5198, lng: 35.2715, county: 'Uasin Gishu', ward: 'Eldoret Town', poverty_index: 35.6, education_access: 74.2, health_vulnerability: 36.8, water_access: 72.3, housing_quality: 65.4, population: 280000 },
+                { name: 'Kisumu', lat: -0.0917, lng: 34.7680, county: 'Kisumu', ward: 'Kisumu Central', poverty_index: 58.3, education_access: 68.5, health_vulnerability: 62.1, water_access: 70.2, housing_quality: 52.8, population: 400000 },
+                { name: 'Mombasa', lat: -4.0435, lng: 39.6682, county: 'Mombasa', ward: 'Mombasa Central', poverty_index: 42.5, education_access: 75.8, health_vulnerability: 38.2, water_access: 80.5, housing_quality: 68.9, population: 1200000 },
+                { name: 'Thika', lat: -1.0332, lng: 37.0693, county: 'Kiambu', ward: 'Thika Town', poverty_index: 45.8, education_access: 70.2, health_vulnerability: 42.5, water_access: 78.3, housing_quality: 60.7, population: 180000 }
+            ];
             
-            return res.status(404).json({
-                error: 'No data available',
-                message: 'No poverty data found'
-            });
+            // Convert to GeoJSON format
+            const geoJsonData = {
+                type: "FeatureCollection",
+                features: sampleLocations.map(location => ({
+                    type: "Feature",
+                    geometry: {
+                        type: "Point",
+                        coordinates: [location.lng, location.lat]
+                    },
+                    properties: {
+                        name: location.name,
+                        county: location.county,
+                        ward: location.ward,
+                        poverty_index: location.poverty_index,
+                        education_access: location.education_access,
+                        health_vulnerability: location.health_vulnerability,
+                        water_access: location.water_access,
+                        housing_quality: location.housing_quality,
+                        population: location.population,
+                        last_updated: new Date().toISOString()
+                    }
+                }))
+            };
+            
+            console.log(`✅ Returning ${sampleLocations.length} sample locations as fallback`);
+            return res.json(geoJsonData);
         }
         
         // Convert database data to GeoJSON format
