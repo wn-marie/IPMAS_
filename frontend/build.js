@@ -1,12 +1,17 @@
 /**
  * Simple build script to copy static files
  * Alternative to webpack for faster builds
+ * No dependencies required - uses only Node.js built-ins
  */
 const fs = require('fs');
 const path = require('path');
 
 const sourceDir = path.join(__dirname, 'public');
 const destDir = path.join(__dirname, 'dist');
+
+console.log('Building frontend...');
+console.log('Source:', sourceDir);
+console.log('Destination:', destDir);
 
 // Remove dist directory if it exists
 if (fs.existsSync(destDir)) {
