@@ -11,6 +11,14 @@ class RedisService {
 
     async initialize() {
         try {
+            // Build REDIS_URL from individual variables if not provided
+            if (!process.env.REDIS_URL && process.env.REDIS_HOST) {
+                const redisHost = process.env.REDIS_HOST;
+                const redisPort = process.env.REDIS_PORT || '6379';
+                const redisPassword = process.env.REDIS_PASSWORD ? `:${process.env.REDIS_PASSWORD}@` : '';
+                process.env.REDIS_URL = `redis://${redisPassword}${redisHost}:${redisPort}`;
+            }
+
             // For development, use in-memory cache instead of actual Redis
             if (process.env.NODE_ENV === 'development' || !process.env.REDIS_URL) {
                 console.log('Using in-memory cache for development');

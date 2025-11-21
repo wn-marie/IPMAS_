@@ -7,7 +7,7 @@ echo "NPM version: $(npm --version)"
 
 # Install root dependencies (skip dev deps, skip scripts to avoid puppeteer download)
 echo "=== Installing root dependencies ==="
-npm install --only=production --ignore-scripts --no-audit --no-fund || true
+npm install --only=production --ignore-scripts --no-audit --no-fund
 
 # Install backend dependencies (skip puppeteer postinstall to save time)
 echo "=== Installing backend dependencies ==="
