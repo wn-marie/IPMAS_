@@ -235,8 +235,8 @@ app.get('/status', (req, res) => {
     });
 });
 
-// API info endpoint
-app.get('/', (req, res) => {
+// API info endpoint (moved to /api/info to allow frontend at root)
+app.get('/api/info', (req, res) => {
     res.json({
         name: 'IPMAS API',
         version: '1.0.0',
@@ -250,7 +250,8 @@ app.get('/', (req, res) => {
             questionnaire: '/api/v1/questionnaire',
             health: '/health',
             metrics: '/metrics',
-            status: '/status'
+            status: '/status',
+            apiInfo: '/api/info'
         },
         documentation: process.env.API_DOCS_URL || 'https://github.com/your-org/IPMAS2'
     });
