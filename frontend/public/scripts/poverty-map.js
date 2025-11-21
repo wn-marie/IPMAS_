@@ -3,6 +3,49 @@
  * Advanced poverty visualization with hotspot analysis and regional mapping
  */
 
+// Global event delegation for popup buttons (CSP compliance)
+document.addEventListener('click', function(e) {
+    // Handle "Show Breakdown" buttons in Leaflet popups
+    if (e.target.closest('.show-breakdown-btn')) {
+        e.preventDefault();
+        const btn = e.target.closest('.show-breakdown-btn');
+        const locationDataStr = btn.getAttribute('data-location');
+        if (locationDataStr && typeof showLocationBreakdown === 'function') {
+            try {
+                const data = JSON.parse(locationDataStr.replace(/&#39;/g, "'"));
+                showLocationBreakdown(data);
+            } catch (err) {
+                console.error('Error parsing location data for breakdown:', err);
+            }
+        }
+    }
+    
+    // Handle "View Full Report" buttons in Leaflet popups
+    if (e.target.closest('.view-full-report-btn')) {
+        e.preventDefault();
+        const btn = e.target.closest('.view-full-report-btn');
+        const locationDataStr = btn.getAttribute('data-location');
+        if (locationDataStr) {
+            try {
+                const data = JSON.parse(locationDataStr.replace(/&#39;/g, "'"));
+                if (typeof openFullReport === 'function') {
+                    openFullReport(data);
+                } else {
+                    const activeLayers = (typeof getActiveLayersForDashboard === 'function') 
+                        ? getActiveLayersForDashboard() 
+                        : (typeof getActiveLayers === 'function' ? getActiveLayers() : ['poverty_index']);
+                    data._activeLayers = activeLayers;
+                    sessionStorage.setItem('areaReportData', JSON.stringify(data));
+                    window.location.href = '/area-report.html';
+                }
+            } catch (err) {
+                console.error('Error parsing location data:', err);
+            }
+        }
+        return false;
+    }
+});
+
 class PovertyMapSystem {
     constructor() {
         this.map = null;
@@ -1989,6 +2032,35 @@ function showLocationBreakdown(locationData) {
 
     // Show modal
     modal.style.display = 'flex';
+    
+    // Attach event listeners after modal content is set
+    setTimeout(() => {
+        const reportBtn = contentDiv.querySelector('.view-full-report-btn');
+        if (reportBtn) {
+            reportBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const locationDataStr = this.getAttribute('data-location');
+                if (locationDataStr) {
+                    try {
+                        const data = JSON.parse(locationDataStr.replace(/&#39;/g, "'"));
+                        if (typeof openFullReport === 'function') {
+                            openFullReport(data);
+                        } else {
+                            const activeLayers = (typeof getActiveLayersForDashboard === 'function') 
+                                ? getActiveLayersForDashboard() 
+                                : (typeof getActiveLayers === 'function' ? getActiveLayers() : ['poverty_index']);
+                            data._activeLayers = activeLayers;
+                            sessionStorage.setItem('areaReportData', JSON.stringify(data));
+                            window.location.href = '/area-report.html';
+                        }
+                    } catch (err) {
+                        console.error('Error parsing location data:', err);
+                    }
+                }
+                return false;
+            });
+        }
+    }, 100);
 }
 
 function generateLocationBreakdownHTML(location) {

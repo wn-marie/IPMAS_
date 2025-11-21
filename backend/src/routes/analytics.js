@@ -218,7 +218,7 @@ router.get('/poverty/all', async (req, res) => {
                 console.log('Sample data not available, returning empty result');
             }
             
-            if (sampleData && sampleData.locations) {
+            if (sampleData && sampleData.locations && Array.isArray(sampleData.locations)) {
                 const geoJsonData = {
                     type: "FeatureCollection",
                     features: sampleData.locations.map(location => ({

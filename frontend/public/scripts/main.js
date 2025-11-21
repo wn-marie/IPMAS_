@@ -3091,6 +3091,38 @@ class IPMASApp {
             if (this.userLocationMarker) {
                 this.userLocationMarker.setPopupContent(popupContent);
                 this.userLocationMarker.openPopup();
+                
+                // Attach event listener after popup is opened
+                setTimeout(() => {
+                    const popupElement = this.userLocationMarker.getPopup().getElement();
+                    if (popupElement) {
+                        const reportBtn = popupElement.querySelector('.view-full-report-btn');
+                        if (reportBtn) {
+                            reportBtn.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                const locationDataStr = reportBtn.getAttribute('data-location');
+                                if (locationDataStr) {
+                                    try {
+                                        const data = JSON.parse(locationDataStr.replace(/&#39;/g, "'"));
+                                        if (typeof openFullReport === 'function') {
+                                            openFullReport(data);
+                                        } else {
+                                            const activeLayers = (typeof getActiveLayersForDashboard === 'function') 
+                                                ? getActiveLayersForDashboard() 
+                                                : (typeof getActiveLayers === 'function' ? getActiveLayers() : ['poverty_index']);
+                                            data._activeLayers = activeLayers;
+                                            sessionStorage.setItem('areaReportData', JSON.stringify(data));
+                                            window.location.href = '/area-report.html';
+                                        }
+                                    } catch (err) {
+                                        console.error('Error parsing location data:', err);
+                                    }
+                                }
+                                return false;
+                            });
+                        }
+                    }
+                }, 100);
             }
             
         } catch (error) {
