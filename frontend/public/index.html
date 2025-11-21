@@ -2048,6 +2048,11 @@
         }
         
         /* Leaflet Popup Styles */
+        .leaflet-popup {
+            /* Ensure popup doesn't prevent scrolling */
+            pointer-events: auto;
+        }
+        
         .leaflet-popup-content-wrapper {
             border-radius: 12px;
             box-shadow: var(--panel-shadow);
@@ -2062,6 +2067,8 @@
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             touch-action: pan-y;
+            /* Ensure content can scroll */
+            position: relative;
         }
         
         .leaflet-popup-content {
@@ -2085,11 +2092,17 @@
         .custom-popup .leaflet-popup-content-wrapper {
             max-width: 100% !important;
             width: auto !important;
+            /* Enable scrolling for custom popups */
+            max-height: 80vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
         }
         
         .custom-popup .leaflet-popup-content {
             width: auto !important;
             max-width: 100% !important;
+            overflow: visible;
         }
         
         /* Map Container - No spacing above */
@@ -2537,6 +2550,8 @@
             .leaflet-popup {
                 max-width: calc(100vw - 40px) !important;
                 width: calc(100vw - 40px) !important;
+                /* Ensure popup doesn't block scrolling */
+                pointer-events: auto !important;
             }
             
             .leaflet-popup-content-wrapper {
@@ -2568,11 +2583,17 @@
             .custom-popup .leaflet-popup-content-wrapper {
                 max-width: calc(100vw - 40px) !important;
                 width: calc(100vw - 40px) !important;
+                /* Mobile scrolling fixes for custom popups */
+                max-height: 80vh !important;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                touch-action: pan-y !important;
             }
             
             .custom-popup .leaflet-popup-content {
                 max-width: 100% !important;
                 width: 100% !important;
+                overflow: visible !important;
             }
             
             /* Poverty Popup Mobile Styles */
