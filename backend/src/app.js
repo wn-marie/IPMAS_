@@ -907,18 +907,39 @@ const frontendPath = fs.existsSync(frontendDistPath) ? frontendDistPath : fronte
 // Serve static files (CSS, JS, images, etc.)
 app.use(express.static(frontendPath));
 
-// Serve index.html for all non-API routes (SPA routing)
+// Serve frontend index.html for root route
+app.get('/', (req, res, next) => {
+    const indexPath = path.join(frontendPath, 'index.html');
+    if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath, (err) => {
+            if (err) {
+                console.error('Error serving index.html:', err);
+                next();
+            }
+        });
+    } else {
+        console.warn('Frontend index.html not found at:', indexPath);
+        next();
+    }
+});
+
+// Serve index.html for all other non-API routes (SPA routing)
 app.get('*', (req, res, next) => {
     // Skip API routes and system endpoints
     if (req.path.startsWith('/api') || req.path.startsWith('/health') || req.path.startsWith('/metrics') || req.path.startsWith('/status') || req.path.startsWith('/memory')) {
         return next();
     }
     // Serve frontend index.html for all other routes
-    res.sendFile(path.join(frontendPath, 'index.html'), (err) => {
-        if (err) {
-            next();
-        }
-    });
+    const indexPath = path.join(frontendPath, 'index.html');
+    if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath, (err) => {
+            if (err) {
+                next();
+            }
+        });
+    } else {
+        next();
+    }
 });
 
 // Error handling middleware (must be last)
