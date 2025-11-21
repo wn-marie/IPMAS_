@@ -5,16 +5,67 @@ const dbService = require('../config/postgis');
 // Submit community feedback
 router.post('/submit', async (req, res) => {
     try {
-        const { location, comment, sentiment, urgency_level, demographic_info, contact_info } = req.body;
+        // Support both old format (location, comment, sentiment) and new format (feedback_type, content, urgency_level)
+        const { 
+            location, 
+            comment, 
+            sentiment, 
+            urgency_level, 
+            demographic_info, 
+            contact_info,
+            // New format fields
+            feedback_type,
+            content
+        } = req.body;
         
-        // Validate required fields
-        if (!location || !comment || !sentiment) {
+        // Determine which format is being used
+        const isNewFormat = feedback_type && content;
+        const isOldFormat = location && comment && sentiment;
+        
+        // Validate required fields based on format
+        if (!isNewFormat && !isOldFormat) {
             return res.status(400).json({
                 error: 'Missing required fields',
-                message: 'Location, comment, and sentiment are required'
+                message: 'Either provide (location, comment, sentiment) or (feedback_type, content)'
             });
         }
 
+        // Handle new format (from frontend feedback form)
+        if (isNewFormat) {
+            // Validate urgency level
+            const validUrgencyLevels = ['Low', 'Medium', 'High', 'Critical'];
+            const urgency = urgency_level || 'Medium';
+            if (!validUrgencyLevels.includes(urgency)) {
+                return res.status(400).json({
+                    error: 'Invalid urgency level',
+                    message: `Urgency level must be one of: ${validUrgencyLevels.join(', ')}`
+                });
+            }
+
+            const feedbackData = {
+                coordinates: location || { lat: 0, lng: 0 }, // Default if no location provided
+                feedback_type: feedback_type || 'general',
+                content: content,
+                urgency_level: urgency,
+                demographic_info: demographic_info || {},
+                contact_info: contact_info || {}
+            };
+
+            const savedFeedback = await dbService.saveCommunityFeedback(feedbackData);
+            
+            return res.status(201).json({
+                success: true,
+                message: 'Feedback submitted successfully',
+                feedback: {
+                    id: savedFeedback.id,
+                    type: feedback_type,
+                    urgency_level: urgency,
+                    submitted_at: savedFeedback.created_at
+                }
+            });
+        }
+
+        // Handle old format (with location and sentiment)
         // Validate sentiment
         const validSentiments = ['Positive', 'Negative', 'Neutral'];
         if (!validSentiments.includes(sentiment)) {

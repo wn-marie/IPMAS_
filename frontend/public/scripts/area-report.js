@@ -2014,6 +2014,29 @@ function downloadPDFReport() {
             
         html2pdf().set(opt).from(reportContent).save().then(() => {
                 console.log('✅ PDF generated successfully');
+                
+                // Dispatch notification event
+                const locationName = (window.reportGenerator?.locationData?.name || 
+                                    window.reportGenerator?.locationData?.location_name || 
+                                    'Area Report');
+                document.dispatchEvent(new CustomEvent('reportDownloaded', {
+                    detail: {
+                        id: Date.now(),
+                        type: locationName,
+                        format: 'pdf'
+                    }
+                }));
+                
+                // Also show notification directly if system is available
+                if (window.notificationSystem) {
+                    window.notificationSystem.showNotification(
+                        '📥 Report Downloaded',
+                        'success',
+                        `${locationName} (PDF) has been downloaded successfully`,
+                        4000
+                    );
+                }
+                
                 finalize();
             }).catch(err => {
                 console.error('❌ PDF generation error:', err);
