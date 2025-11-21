@@ -13,11 +13,11 @@ const isProduction = !forceLocal && hostname !== 'localhost' && hostname !== '12
 const isNetworkIP = !isProduction && !forceLocal && (hostname.match(/^192\.168\.|^10\.|^172\.(1[6-9]|2\d|3[01])\./) || hostname !== 'localhost' && hostname !== '127.0.0.1');
 
 const API_CONFIG = {
-    // Backend runs on port 3001 (API only) in development, same origin in production
-    // For network IPs, use the same hostname with port 3001
-    BASE_URL: isProduction ? '' : (isNetworkIP ? `http://${hostname}:3001` : 'http://localhost:3001'),
+    // Backend runs on port 3001 (API only) in development
+    // In production, use explicit backend URL (can be overridden with ?local=true)
+    BASE_URL: isProduction ? 'https://ipmas-backend.onrender.com' : (isNetworkIP ? `http://${hostname}:3001` : 'http://localhost:3001'),
     // Socket.IO server URL (same as backend)
-    SOCKET_URL: isProduction ? window.location.origin : (isNetworkIP ? `http://${hostname}:3001` : 'http://localhost:3001'),
+    SOCKET_URL: isProduction ? 'https://ipmas-backend.onrender.com' : (isNetworkIP ? `http://${hostname}:3001` : 'http://localhost:3001'),
     VERSION: 'v1',
     ENDPOINTS: {
         ANALYTICS: '/api/v1/analytics',
